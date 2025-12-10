@@ -27,40 +27,45 @@ export function Hero() {
           alt=""
           width={84}
           height={84}
-          className="absolute top-[15%] left-[5%] sm:top-40 sm:left-40 w-16 md:w-96 h-auto"
+          className="absolute top-[15%] left-[5%] sm:top-40 sm:left-40 w-16 md:w-48 h-auto animate-float"
+          style={{ animationDelay: "0s" }}
         />
         <Image
           src="/HeroSticker2.webp"
           alt=""
           width={84}
           height={84}
-          className="absolute bottom-[20%] left-[10%] sm:bottom-60 sm:left-50 w-16 sm:w-20 h-16 sm:h-20"
+          className="absolute bottom-[20%] left-[10%] sm:bottom-60 sm:left-50 w-16 sm:w-20 h-16 sm:h-20 animate-float"
+          style={{ animationDelay: "0.3s" }}
         />
         <Image
           src="/HeroSticker3.webp"
           alt=""
           width={64}
           height={64}
-          className="absolute top-[20%] right-[5%] sm:top-40 sm:right-[25%] w-14 sm:w-16 h-14 sm:h-16"
+          className="absolute top-[20%] right-[5%] sm:top-40 sm:right-[25%] w-14 sm:w-16 h-14 sm:h-16 animate-float"
+          style={{ animationDelay: "0.6s" }}
         />
         <Image
           src="/HeroSticker4.webp"
           alt=""
-          width={120}
-          height={120}
-          className="absolute top-1/3 right-0 w-32 sm:w-96 h-auto"
+          width={64}
+          height={64}
+          className="absolute top-1/4 right-0 w-28 sm:w-54 h-auto animate-float"
+          style={{ animationDelay: "0.9s" }}
         />
         <Image
           src="/HeroSticker5.webp"
           alt=""
           width={84}
           height={84}
-          className="absolute bottom-1/4 right-1/4 w-16 sm:w-42 h-auto"
+          className="absolute bottom-1/4 right-1/4 w-14 sm:w-38 h-auto animate-float"
+          style={{ animationDelay: "1.2s" }}
         />
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-10 py-30">
+      <main className="flex-1 flex items-center justify-center px-10 py-20">
         <div className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto space-y-8">
           {/* Hero Visual */}
           <div className="w-64 h-64 flex items-center justify-center">

@@ -30,6 +30,7 @@ interface FinalBadgeCardProps {
     showNext?: boolean;
     onPrev?: () => void;
     onNext?: () => void;
+    onDisconnect?: () => void;
   };
 }
 
@@ -60,6 +61,7 @@ export function FinalBadgeCard({ data, navigationProps }: FinalBadgeCardProps) {
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}
       onNext={navigationProps?.onNext}
+      onDisconnect={navigationProps?.onDisconnect}
     >
       <div className="w-full flex flex-col items-center justify-center space-y-6">
         {/* Headline */}

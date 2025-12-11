@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Wallet, Check } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { fetchVolumeStats, type VolumeStats } from "@/lib/stacks-data";
 
 const loadingMessages = [
   "Querying 365 days of on-chain history...",
@@ -16,11 +17,27 @@ const loadingMessages = [
 ];
 
 export default function WrapPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      }
+    >
+      <LoadingContent />
+    </Suspense>
+  );
+}
+
+function LoadingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const address = searchParams.get("address");
   const [progress, setProgress] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
+  const [volumeData, setVolumeData] = useState<VolumeStats | null>(null);
+  const [dataFetched, setDataFetched] = useState(false);
 
   useEffect(() => {
     if (!address) {
@@ -28,32 +45,64 @@ export default function WrapPage() {
       return;
     }
 
+    let cancelled = false;
+
+    // Fetch volume data immediately
+    const fetchData = async () => {
+      try {
+        console.log("Fetching volume stats for:", address);
+        const stats = await fetchVolumeStats(address);
+        if (!cancelled) {
+          console.log("Volume stats fetched:", stats);
+          setVolumeData(stats);
+          setDataFetched(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch volume stats:", err);
+        if (!cancelled) {
+          setVolumeData(null);
+          setDataFetched(true); // Mark as fetched even on error, so we proceed
+        }
+      }
+    };
+
+    fetchData();
+
     // Cycle through messages
     const messageInterval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % loadingMessages.length);
     }, 2500);
 
-    // Simulate loading progress
+    // Progress animation - reaches completion once data is fetched
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
+        const newProgress = Math.min(prev + Math.random() * 20 + 8, 95);
+
+        // Once data is fetched and progress is high, complete it
+        if (dataFetched && newProgress >= 90) {
           clearInterval(progressInterval);
           clearInterval(messageInterval);
-          // Redirect to first card (volume) after loading completes
+
+          // Navigate with the fetched data stored
           setTimeout(() => {
+            if (volumeData) {
+              sessionStorage.setItem("volumeData", JSON.stringify(volumeData));
+            }
             router.push(`/wrap/volume?address=${encodeURIComponent(address)}`);
-          }, 500);
+          }, 200);
           return 100;
         }
-        return prev + 10;
+
+        return newProgress;
       });
     }, 300);
 
     return () => {
+      cancelled = true;
       clearInterval(progressInterval);
       clearInterval(messageInterval);
     };
-  }, [address, router]);
+  }, [address, router, dataFetched, volumeData]);
 
   const truncateAddress = (addr: string) => {
     if (addr.length <= 10) return addr;

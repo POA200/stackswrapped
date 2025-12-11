@@ -58,18 +58,28 @@ export default function CardPage({
     }
   };
 
+  const handleDisconnect = () => {
+    router.push("/");
+  };
+
   // Navigation props
   const navigationProps = {
     showPrev: currentIndex > 0,
     showNext: currentIndex < CARD_SEQUENCE.length - 1,
     onPrev: handlePrev,
     onNext: handleNext,
+    onDisconnect: handleDisconnect,
   };
 
   // Render the appropriate card based on cardId
   switch (cardId) {
     case "volume":
-      return <VolumeCard navigationProps={navigationProps} />;
+      return (
+        <VolumeCard
+          navigationProps={navigationProps}
+          address={address || undefined}
+        />
+      );
     case "nft":
       return <NFTCard navigationProps={navigationProps} />;
     case "badge":

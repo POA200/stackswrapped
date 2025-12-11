@@ -11,3 +11,5 @@
 
 # Turbo Cache
 .turbo
+
+.env

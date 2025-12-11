@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Wallet } from "lucide-react";
+import { StacksConnectButton } from "@/components/connectors/StacksConnectButton";
 
 export function Hero() {
   const [walletAddress, setWalletAddress] = useState("");
@@ -65,7 +65,7 @@ export function Hero() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-10 py-20">
+      <main className="flex-1 flex items-center justify-center px-10 py-10 md:py-20">
         <div className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto space-y-8">
           {/* Hero Visual */}
           <div className="w-64 h-64 flex items-center justify-center">
@@ -114,14 +114,7 @@ export function Hero() {
             <p className="text-sm text-muted-foreground text-center">— OR —</p>
 
             {/* CTA Button */}
-            <Button
-              variant="default"
-              size="lg"
-              className="shadow-lg shadow-primary/30 hover:scale-105 transition-transform duration-200 text-lg px-8 py-6 gap-2 cursor-pointer"
-            >
-              <Wallet className="w-5 h-5" />
-              Connect Wallet to view your Wrap
-            </Button>
+            <StacksConnectButton />
           </div>
         </div>
       </main>

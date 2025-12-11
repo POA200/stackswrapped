@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Wallet, Check } from "lucide-react";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 
 const loadingMessages = [
   "Querying 365 days of on-chain history...",
@@ -37,9 +39,9 @@ export default function WrapPage() {
         if (prev >= 100) {
           clearInterval(progressInterval);
           clearInterval(messageInterval);
-          // Redirect to card page after loading completes
+          // Redirect to first card (volume) after loading completes
           setTimeout(() => {
-            router.push(`/wrap/${encodeURIComponent(address)}`);
+            router.push(`/wrap/volume?address=${encodeURIComponent(address)}`);
           }, 500);
           return 100;
         }
@@ -59,30 +61,34 @@ export default function WrapPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="w-full max-w-md p-6 text-center bg-card/80">
-        <div className="flex items-center justify-center mb-4 relative">
-          <div className="rounded-full bg-accent/10 p-4">
-            <Wallet className="w-12 h-12 text-primary" />
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      <div className="flex-1 flex items-center justify-center">
+        <Card className="w-full max-w-md p-6 text-center bg-card/80">
+          <div className="flex items-center justify-center mb-4 relative">
+            <div className="rounded-full bg-accent/10 p-4">
+              <Wallet className="w-12 h-12 text-primary" />
+            </div>
+            <div className="absolute -right-3 -bottom-2 rounded-full bg-primary p-1">
+              <Check className="w-4 h-4 text-white" />
+            </div>
           </div>
-          <div className="absolute -right-3 -bottom-2 rounded-full bg-primary p-1">
-            <Check className="w-4 h-4 text-white" />
+
+          <div className="mb-3">
+            <div className="text-sm text-muted-foreground">Connected:</div>
+            <Badge className="mt-2 inline-flex items-center px-3 py-1 rounded-full font-mono">
+              {address ? truncateAddress(address) : "..."}
+            </Badge>
           </div>
-        </div>
 
-        <div className="mb-3">
-          <div className="text-sm text-muted-foreground">Connected:</div>
-          <Badge className="mt-2 inline-flex items-center px-3 py-1 rounded-full font-mono">
-            {address ? truncateAddress(address) : "..."}
-          </Badge>
-        </div>
+          <p className="text-sm text-muted-foreground mb-4 min-h-[40px] flex items-center justify-center">
+            {loadingMessages[messageIndex]}
+          </p>
 
-        <p className="text-sm text-muted-foreground mb-4 min-h-[40px] flex items-center justify-center">
-          {loadingMessages[messageIndex]}
-        </p>
-
-        <Progress value={progress} className="h-2 rounded-full" />
-      </Card>
+          <Progress value={progress} className="h-2 rounded-full" />
+        </Card>
+      </div>
+      <Footer />
     </div>
   );
 }

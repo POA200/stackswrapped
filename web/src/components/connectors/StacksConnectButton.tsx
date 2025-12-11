@@ -46,7 +46,7 @@ export function StacksConnectButton({ children, ...props }: ButtonProps) {
   const handleViewWrap = () => {
     if (!isConnected || !walletInfo) return;
     const stxAddress = walletInfo.addresses[2].address;
-    router.push(`/wrap?address=${encodeURIComponent(stxAddress)}`);
+    router.push(`/wrap/loading?address=${encodeURIComponent(stxAddress)}`);
   };
 
   const getDisplayName = () => {

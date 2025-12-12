@@ -16,12 +16,14 @@ interface VolumeCardProps {
     onNext?: () => void;
     onDisconnect?: () => void;
   };
+  progress?: { current: number; total: number };
 }
 
 export function VolumeCard({
   address,
   data,
   navigationProps,
+  progress,
 }: VolumeCardProps) {
   const fallbackData: VolumeStats = useMemo(
     () => ({
@@ -114,25 +116,27 @@ export function VolumeCard({
       onPrev={navigationProps?.onPrev}
       onNext={navigationProps?.onNext}
       onDisconnect={navigationProps?.onDisconnect}
+      currentStep={progress?.current}
+      totalSteps={progress?.total}
     >
       <div className="relative w-full h-full flex flex-col items-center justify-center px-4 py-6 space-y-4">
         {/* Top Stickers - Positioned Absolutely */}
-        <div className="absolute top-0 left-0 w-32 h-auto">
+        <div className="absolute top-0 left-0 w-32 h-auto -z-10 pointer-events-none">
           <Image
             src="/VolumeCardSticker1.svg"
             alt=""
             width={64}
             height={64}
-            className="w-full h-full"
+            className="w-full h-full -z-10 pointer-events-none"
           />
         </div>
-        <div className="absolute bottom-3 right-0 w-26 h-auto">
+        <div className="absolute bottom-3 right-0 w-26 h-auto -z-10 pointer-events-none">
           <Image
             src="/VolumeCardSticker2.svg"
             alt=""
             width={80}
             height={80}
-            className="w-full h-full"
+            className="w-full h-full -z-10 pointer-events-none"
           />
         </div>
 

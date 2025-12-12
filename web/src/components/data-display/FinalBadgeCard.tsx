@@ -1,29 +1,27 @@
-/**
- * FILE: web/src/components/data-display/FinalBadgeCard.tsx
- *
- * PURPOSE: Implements the final "Your Stacks Wrapped Badge" card with achievements and summary.
- *
- * STACK CONTEXT:
- * - Client Component.
- * - Imports: CardFrame from '@/components/data-display/CardFrame'.
- * - Data: Assumes props receive badge and achievement data.
- * - Aesthetic: Celebrates the user's year with a prominent badge and achievement list.
- *
- * PROPS:
- * - data: { badgeTitle: string, achievements: array }
- * - navigationProps: { showPrev: boolean, showNext: boolean, onPrev: () => void, onNext: () => void }
- */
-
 "use client";
 
 import { CardFrame } from "@/components/data-display/CardFrame";
 import { Card } from "@/components/ui/card";
-import { Award, Crown } from "lucide-react";
+import {
+  Crown,
+  TrendingUp,
+  Gem,
+  Clock,
+  Network,
+  DollarSign,
+  Image as ImageIcon,
+} from "lucide-react";
+import Image from "next/image";
 
 interface FinalBadgeCardProps {
   data?: {
-    badgeTitle: string;
-    achievements: Array<{ icon: string; title: string; description: string }>;
+    badgeTitle?: string;
+    volume?: number;
+    nftCount?: number;
+    topToken?: string;
+    tokenHeldDays?: number;
+    topProtocol?: string;
+    largestTransaction?: number;
   };
   navigationProps?: {
     showPrev?: boolean;
@@ -32,81 +30,130 @@ interface FinalBadgeCardProps {
     onNext?: () => void;
     onDisconnect?: () => void;
   };
+  progress?: { current: number; total: number };
 }
 
-export function FinalBadgeCard({ data, navigationProps }: FinalBadgeCardProps) {
+export function FinalBadgeCard({
+  data,
+  navigationProps,
+  progress,
+}: FinalBadgeCardProps) {
   // Default data for placeholder/demo
-  const badgeData = data || {
-    badgeTitle: "Bitcoin L2 Pioneer",
-    achievements: [
-      {
-        icon: "🚀",
-        title: "Early Adopter",
-        description: "Active on Stacks since Day 1",
-      },
-      { icon: "💎", title: "Diamond Hands", description: "Held through 2025" },
-      { icon: "⚡", title: "Power User", description: "1000+ transactions" },
-      {
-        icon: "🏆",
-        title: "Top Performer",
-        description: "In top 10% of users",
-      },
-    ],
+  const summaryData = data || {
+    badgeTitle: "Stacks Pioneer",
+    volume: 50000,
+    nftCount: 12,
+    topToken: "STX",
+    tokenHeldDays: 712,
+    topProtocol: "ALEX",
+    largestTransaction: 5000,
   };
 
   return (
     <CardFrame
-      title="Your 2025 Wrapped Badge"
+      title="Your 2025 Wrapped Summary"
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}
       onNext={navigationProps?.onNext}
       onDisconnect={navigationProps?.onDisconnect}
+      currentStep={progress?.current}
+      totalSteps={progress?.total}
     >
-      <div className="w-full flex flex-col items-center justify-center space-y-6">
+      <div className="w-full flex flex-col items-center justify-center space-y-6 px-4 py-4">
         {/* Headline */}
         <div className="text-center space-y-2">
           <h2 className="text-2xl md:text-3xl font-bold text-primary flex items-center justify-center gap-2">
             <Crown className="w-6 h-6" />
-            Your Achievement
+            Your 2025 Year in Review
           </h2>
-          <p className="text-sm text-muted-foreground">2025 Stacks Wrapped</p>
+          <p className="text-sm text-foreground">Stacks Wrapped Compilation</p>
         </div>
 
-        {/* Badge */}
-        <div className="flex flex-col items-center justify-center space-y-3">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center shadow-lg shadow-primary/50">
-            <Award className="w-12 h-12 text-white" />
-          </div>
-          <h3 className="text-2xl font-bold text-center text-foreground">
-            {badgeData.badgeTitle}
+        {/* Badge Section */}
+        <div className="flex flex-col items-center justify-center space-y-2 w-full">
+          <Image
+            src="/HodlHeroBadge.svg"
+            alt="Badge"
+            width={160}
+            height={160}
+            className="w-40 h-40 drop-shadow-lg"
+          />
+          <h3 className="text-xl font-regular text-center text-orange-500">
+            {summaryData.badgeTitle}
           </h3>
         </div>
 
-        {/* Achievements Grid */}
+        {/* Statistics Grid */}
         <Card className="w-full p-4 bg-card/50 border border-primary/20">
-          <div className="grid grid-cols-2 gap-3">
-            {badgeData.achievements.map((achievement, index) => (
-              <div
-                key={index}
-                className="p-3 bg-background/50 rounded border border-primary/10 text-center space-y-1"
-              >
-                <div className="text-2xl">{achievement.icon}</div>
-                <p className="text-xs font-semibold text-foreground">
-                  {achievement.title}
-                </p>
-                <p className="text-[10px] text-muted-foreground">
-                  {achievement.description}
-                </p>
-              </div>
-            ))}
+          <div className="grid grid-cols-3 gap-3">
+            {/* Trading Volume */}
+            <div className="p-3 bg-background/50 rounded border border-primary/10 text-center space-y-2">
+              <TrendingUp className="w-5 h-5 text-primary mx-auto" />
+              <p className="text-[10px] font-semibold text-foreground">
+                Volume
+              </p>
+              <p className="text-xs text-muted-foreground">
+                ${((summaryData.volume || 0) / 1000).toFixed(0)}K
+              </p>
+            </div>
+
+            {/* NFT Count */}
+            <div className="p-3 bg-background/50 rounded border border-primary/10 text-center space-y-2">
+              <ImageIcon className="w-5 h-5 text-primary mx-auto" />
+              <p className="text-[10px] font-semibold text-foreground">NFTs</p>
+              <p className="text-xs text-muted-foreground">
+                {summaryData.nftCount}
+              </p>
+            </div>
+
+            {/* Top Token */}
+            <div className="p-3 bg-background/50 rounded border border-primary/10 text-center space-y-2">
+              <Gem className="w-5 h-5 text-primary mx-auto" />
+              <p className="text-[10px] font-semibold text-foreground">
+                Top Token
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {summaryData.topToken}
+              </p>
+            </div>
+
+            {/* Days Holding */}
+            <div className="p-3 bg-background/50 rounded border border-primary/10 text-center space-y-2">
+              <Clock className="w-5 h-5 text-primary mx-auto" />
+              <p className="text-[10px] font-semibold text-foreground">
+                HODL Days
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {summaryData.tokenHeldDays}
+              </p>
+            </div>
+
+            {/* Top Protocol */}
+            <div className="p-3 bg-background/50 rounded border border-primary/10 text-center space-y-2">
+              <Network className="w-5 h-5 text-primary mx-auto" />
+              <p className="text-[10px] font-semibold text-foreground">
+                Protocol
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {summaryData.topProtocol}
+              </p>
+            </div>
+
+            {/* Largest Transaction */}
+            <div className="p-3 bg-background/50 rounded border border-primary/10 text-center space-y-2">
+              <DollarSign className="w-5 h-5 text-primary mx-auto" />
+              <p className="text-[10px] font-semibold text-foreground">Whale</p>
+              <p className="text-xs text-muted-foreground">
+                ${((summaryData.largestTransaction || 0) / 1000).toFixed(1)}K
+              </p>
+            </div>
           </div>
         </Card>
 
         {/* Closing Message */}
         <p className="text-xs text-center text-muted-foreground italic">
-          Celebrate your year on Bitcoin L2. Share your wrapped to inspire
-          others!
+          You're a true Stacks power user. Keep stacking and building on Stacks!
         </p>
       </div>
     </CardFrame>

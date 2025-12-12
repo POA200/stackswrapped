@@ -6,9 +6,11 @@ import { ArrowLeft, ArrowRight, Download, LogOut, Share2 } from "lucide-react";
 import Image from "next/image";
 import { useRef } from "react";
 import { HtmlToImageShare } from "@/components/logic/HtmlToImageShare";
+import { HtmlToImageDownload } from "@/components/logic/HtmlToImageDownload";
 
 interface CardFrameProps {
   title?: string;
+  badgeTitle?: string; // preferred badge title for sharing
   children: React.ReactNode;
   showPrev?: boolean;
   showNext?: boolean;
@@ -21,6 +23,7 @@ interface CardFrameProps {
 
 export function CardFrame({
   title,
+  badgeTitle,
   children,
   showPrev = false,
   showNext = false,
@@ -111,7 +114,12 @@ export function CardFrame({
             </div>
             <div className="flex items-center gap-2">
               <HtmlToImageShare
-                targetRef={cardRef as unknown as React.RefObject<HTMLElement>}
+                targetRef={cardRef as any}
+                cardTitle={title || "Card"}
+                badgeTitle={badgeTitle}
+              />
+              <HtmlToImageDownload
+                targetRef={cardRef as any}
                 fileName={`StacksWrapped_${(title || "Card").replace(
                   /\s+/g,
                   "_"

@@ -16,6 +16,7 @@ import Image from "next/image";
 interface FinalBadgeCardProps {
   data?: {
     badgeTitle?: string;
+    badgeIconSrc?: string; // dynamic icon per user
     volume?: number;
     nftCount?: number;
     topToken?: string;
@@ -40,7 +41,8 @@ export function FinalBadgeCard({
 }: FinalBadgeCardProps) {
   // Default data for placeholder/demo
   const summaryData = data || {
-    badgeTitle: "Stacks Pioneer",
+    badgeTitle: "The HODL Hero",
+    badgeIconSrc: "/HodlHeroBadge.svg",
     volume: 50000,
     nftCount: 12,
     topToken: "STX",
@@ -52,6 +54,7 @@ export function FinalBadgeCard({
   return (
     <CardFrame
       title="Your 2025 Wrapped Summary"
+      badgeTitle={summaryData.badgeTitle}
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}
@@ -73,7 +76,7 @@ export function FinalBadgeCard({
         {/* Badge Section */}
         <div className="flex flex-col items-center justify-center space-y-2 w-full">
           <Image
-            src="/HodlHeroBadge.svg"
+            src={summaryData.badgeIconSrc || "/HodlHeroBadge.svg"}
             alt="Badge"
             width={160}
             height={160}

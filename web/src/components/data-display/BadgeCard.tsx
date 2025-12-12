@@ -7,6 +7,7 @@ interface BadgeCardProps {
   data?: {
     badgeTitle?: string;
     badgeDescription?: string;
+    badgeIconSrc?: string; // dynamic icon per user
   };
   navigationProps?: {
     showPrev?: boolean;
@@ -23,11 +24,13 @@ export function BadgeCard({ data, navigationProps, progress }: BadgeCardProps) {
     badgeTitle: "The HODL Hero",
     badgeDescription:
       "You earned this title by holding longer than 5% of Holders on Stacks this year",
+    badgeIconSrc: "/HodlHeroBadge.svg",
   };
 
   return (
     <CardFrame
       title="Your 2025 Badge"
+      badgeTitle={card.badgeTitle}
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}
@@ -58,7 +61,7 @@ export function BadgeCard({ data, navigationProps, progress }: BadgeCardProps) {
           {/* Badge Icon */}
           <div className="flex items-center justify-center">
             <Image
-              src="/HodlHeroBadge.svg"
+              src={card.badgeIconSrc || "/HodlHeroBadge.svg"}
               alt="Badge"
               width={200}
               height={200}

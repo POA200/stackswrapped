@@ -1,42 +1,55 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Share2 } from "lucide-react";
 import { RefObject, useState } from "react";
 import { toPng } from "html-to-image";
 
 interface HtmlToImageShareProps {
   targetRef: RefObject<HTMLElement>;
-  fileName: string;
+  cardTitle: string;
+  badgeTitle?: string;
 }
 
 export function HtmlToImageShare({
   targetRef,
-  fileName,
+  cardTitle,
+  badgeTitle,
 }: HtmlToImageShareProps) {
-  const [isSaving, setIsSaving] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleSave = async () => {
+  const handleDownloadAndShare = async () => {
     if (!targetRef.current) return;
-    setIsSaving(true);
+    setIsProcessing(true);
     try {
+      const titleForShare = badgeTitle || cardTitle || "Stacks Wrapped";
+      const cleanedTitle = titleForShare.replace(/\s+/g, "_");
+      const fileName = `StacksWrapped_${cleanedTitle}.png`;
+
       const dataUrl = await toPng(targetRef.current, {
         cacheBust: true,
         pixelRatio: 2,
         backgroundColor: "#ffffff",
-        skipAutoScale: false,
       });
+
       const link = document.createElement("a");
       link.href = dataUrl;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      const siteUrl = "https://stackswrapped.vercel.app";
+      const text = `MY STACKS WRAPPED RESULTS IS HERE! I earned the ${titleForShare} badge. Check out your journey here: ${siteUrl}`;
+      const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        text
+      )}`;
+      window.open(twitterShareUrl, "_blank");
     } catch (err) {
-      console.error("Failed to save image", err);
-      alert("Failed to save image. Please try again.");
+      console.error("Download/Share failed", err);
+      alert("Failed to generate image. Please try again.");
     } finally {
-      setIsSaving(false);
+      setIsProcessing(false);
     }
   };
 
@@ -44,11 +57,11 @@ export function HtmlToImageShare({
     <Button
       variant="outline"
       size="sm"
-      onClick={handleSave}
-      disabled={isSaving}
+      onClick={handleDownloadAndShare}
+      disabled={isProcessing}
       className="gap-2"
     >
-      <Download className="w-4 h-4" />
+      <Share2 className="w-4 h-4" />
     </Button>
   );
 }

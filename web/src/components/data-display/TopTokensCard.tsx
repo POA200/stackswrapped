@@ -26,10 +26,10 @@ export function TopTokensCard({
   const tokenData = data || {
     tokens: [
       { name: "STX", duration: "712 days" },
-      { name: "ALEX", duration: "645 days" },
-      { name: "CityCoins", duration: "603 days" },
+      { name: "LEO", duration: "645 days" },
+      { name: "Welsh", duration: "603 days" },
       { name: "sBTC", duration: "489 days" },
-      { name: "Wrapped BTC", duration: "455 days" },
+      { name: "Not", duration: "455 days" },
     ],
   };
 

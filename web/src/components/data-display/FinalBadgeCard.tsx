@@ -47,7 +47,7 @@ export function FinalBadgeCard({
     nftCount: 12,
     topToken: "STX",
     tokenHeldDays: 712,
-    topProtocol: "ALEX",
+    topProtocol: "BITFLOW",
     largestTransaction: 5000,
   };
 
@@ -55,6 +55,7 @@ export function FinalBadgeCard({
     <CardFrame
       title="Your 2025 Wrapped Summary"
       badgeTitle={summaryData.badgeTitle}
+      isDemo={!data}
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}

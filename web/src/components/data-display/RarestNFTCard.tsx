@@ -26,8 +26,8 @@ export function RarestNFTCard({
 }: RarestNFTCardProps) {
   // Default data for placeholder/demo
   const nftData = data || {
-    nftName: "Stacks Punk #1234",
-    collection: "Stacks Punks",
+    nftName: "Leo Cat #1234",
+    collection: "Leo Cats",
     rarity: 99,
   };
 

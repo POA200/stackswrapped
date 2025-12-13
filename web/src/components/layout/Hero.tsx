@@ -51,6 +51,7 @@ export function Hero() {
           alt=""
           width={64}
           height={64}
+          loading="eager"
           className="absolute top-1/4 right-0 w-28 sm:w-54 h-auto animate-float"
           style={{ animationDelay: "0.9s" }}
         />
@@ -59,6 +60,7 @@ export function Hero() {
           alt=""
           width={84}
           height={84}
+          loading="eager"
           className="absolute bottom-1/4 right-1/4 w-14 sm:w-38 h-auto animate-float"
           style={{ animationDelay: "1.2s" }}
         />
@@ -99,7 +101,7 @@ export function Hero() {
               <Input
                 value={walletAddress}
                 onChange={(e) => setWalletAddress(e.target.value)}
-                placeholder="Enter Stacks address (SP...) or BNS name"
+                placeholder="Enter Stacks address (SP...)"
                 className="bg-background/80"
               />
               <Button

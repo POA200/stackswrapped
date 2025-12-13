@@ -25,8 +25,8 @@ export function TopProtocolCard({
   progress,
 }: TopProtocolCardProps) {
   const card = data || {
-    protocolName: "[dApp Name]",
-    contractCalls: 999,
+    protocolName: "Bitflow",
+    contractCalls: 245,
   };
 
   return (
@@ -69,21 +69,20 @@ export function TopProtocolCard({
             </h3>
           </div>
 
+          {/* Protocol Logo Placeholder */}
+          <div className="flex items-center justify-center w-32 h-32 rounded-full border-2 border-primary/30 bg-primary/10 text-primary/60 z-10 mt-6">
+            <div className="flex flex-col items-center justify-center">
+              <CircleDot className="w-12 h-12 text-primary" />
+            </div>
+          </div>
+
           {/* Contract Calls */}
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground">
               total contract calls.
             </p>
-            <div className="text-5xl md:text-6xl font-bold text-orange-500">
+            <div className="text-5xl md:text-6xl font-regular text-orange-500">
               {card.contractCalls}
-            </div>
-          </div>
-
-          {/* Protocol Logo Placeholder */}
-          <div className="flex items-center justify-center w-32 h-32 rounded-full border-2 border-primary/30 bg-primary/10 text-primary/60 z-10 mt-6">
-            <div className="flex flex-col items-center justify-center">
-              <CircleDot className="w-12 h-12 text-primary" />
-              <p className="text-xs mt-2 text-primary/70">Protocol Logo</p>
             </div>
           </div>
         </div>

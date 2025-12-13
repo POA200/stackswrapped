@@ -12,6 +12,7 @@ import { TopProtocolsCard } from "@/components/data-display/TopProtocolsCard";
 import { TopProtocolCard } from "@/components/data-display/TopProtocolCard";
 import { LargestTransactionCard } from "@/components/data-display/LargestTransactionCard";
 import { BadgeCard } from "@/components/data-display/BadgeCard";
+import type { VolumeStats } from "@/lib/stacks-data";
 
 // Define the card sequence
 const CARD_SEQUENCE = [
@@ -37,6 +38,7 @@ export default function CardPage({
   const address = searchParams.get("address");
   const [cardId, setCardId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [volumeData, setVolumeData] = useState<VolumeStats | null>(null);
 
   useEffect(() => {
     // Unwrap the params promise
@@ -45,6 +47,47 @@ export default function CardPage({
       setIsLoading(false);
     });
   }, [params]);
+
+  // Fetch volume data when showing volume card
+  useEffect(() => {
+    if (cardId === "volume" && address && !volumeData) {
+      const fetchVolume = async () => {
+        try {
+          console.log("[CardPage] Fetching volume data for address:", address);
+          const response = await fetch(
+            `/api/volume?address=${encodeURIComponent(address)}`
+          );
+          const result = await response.json();
+
+          if (result.ok && result.data) {
+            console.log("[CardPage] Volume data received:", result.data);
+
+            // Ensure avgTransactionsPerMonth is calculated
+            const totalTx = result.data.totalTransactions || 0;
+            const lookbackMonths = result.data.monthlyData?.length || 12;
+            const avgTx = Math.round(totalTx / lookbackMonths);
+
+            const volumeStats: VolumeStats = {
+              totalTransactions: totalTx,
+              busiestMonth: result.data.busiestMonth || "N/A",
+              firstTransactionDate:
+                result.data.firstTransactionDate || "Unknown",
+              monthlyData: result.data.monthlyData || [],
+              avgTransactionsPerMonth:
+                result.data.avgTransactionsPerMonth || avgTx,
+            };
+
+            console.log("[CardPage] Transformed Props:", volumeStats);
+            setVolumeData(volumeStats);
+          }
+        } catch (err) {
+          console.error("[CardPage] Error fetching volume:", err);
+        }
+      };
+
+      fetchVolume();
+    }
+  }, [cardId, address, volumeData]);
 
   if (isLoading || !cardId) {
     return (
@@ -98,6 +141,8 @@ export default function CardPage({
         <VolumeCard
           navigationProps={navigationProps}
           address={address || undefined}
+          data={volumeData || undefined}
+          progress={progress}
         />
       );
     case "nft":

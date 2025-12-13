@@ -1,25 +1,3 @@
-/**
- * FILE: packages/data-service/src/UserClassifier.ts
- *
- * PURPOSE: A TypeScript module to analyze a user's raw transaction history and assign a "Club Badge" title based on weighted activity scores.
- *
- * STACK CONTEXT:
- * - Pure TypeScript/Node.js module. It consumes the raw data retrieved by StacksDataService.
- * - This logic is crucial for determining the final card content.
- *
- * REQUIREMENTS:
- * 1. Score System: Create a weighted scoring object (e.g., Weights) for different activities:
- *    - DeFi (Contract calls to ALEX, BitFlow, etc.): High Weight (5 points)
- *    - NFT (Transfer events for Megapont, BNS): Medium Weight (3 points)
- *    - Simple STX Transfer: Low Weight (1 point)
- *    - Longevity (HODL Score): Very High Weight (10 points)
- * 2. Classification Function: Create a function `classifyUser(transactions: Transaction[], longestHoldTime: number)` that:
- *    - Iterates through transactions and aggregates scores into categories (DEFI_SCORE, NFT_SCORE, TRANSFER_SCORE).
- *    - Assigns the final badge (e.g., 'DIAMOND_HAND_WHALE', 'YIELD_MASTER', 'STACKS_CURATOR') based on the highest score category.
- *    - Example Rule: IF DEFI_SCORE > NFT_SCORE AND longestHoldTime > 180 days THEN return 'YIELD_MASTER'.
- * 3. Badges: Define an enumeration or map for all the final badge titles we designed (e.g., 'HODL Hero', 'DeFi Guru', 'Stacks Curator', 'Explorer').
- */
-
 import type { Transaction } from '@stacks/blockchain-api-client';
 
 export const Badges = {

@@ -1,34 +1,52 @@
-import { TransactionsApi, AccountsApi, FungibleTokensApi, NonFungibleTokensApi, Configuration } from '@stacks/blockchain-api-client';
-import type { Transaction } from '@stacks/blockchain-api-client';
+import { createClient } from '@stacks/blockchain-api-client';
+
+// Extend RequestInit to include Next.js fetch cache options
+interface NextFetchRequestConfig {
+  revalidate?: number | false;
+  tags?: string[];
+}
 
 export class StacksDataService {
-  private cfg: Configuration;
-  private txApi: TransactionsApi;
-  private accountsApi: AccountsApi;
-  private ftApi: FungibleTokensApi;
-  private nftApi: NonFungibleTokensApi;
+  private client: ReturnType<typeof createClient>;
 
   constructor(basePath: string = 'https://api.mainnet.hiro.so') {
-    this.cfg = new Configuration({ basePath });
-    this.txApi = new TransactionsApi(this.cfg);
-    this.accountsApi = new AccountsApi(this.cfg);
-    this.ftApi = new FungibleTokensApi(this.cfg);
-    this.nftApi = new NonFungibleTokensApi(this.cfg);
+    // Create a custom fetch function with Next.js caching (15 minutes = 900 seconds)
+    const cachedFetch = (url: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      return fetch(url, {
+        ...init,
+        next: { revalidate: 900 }
+      } as RequestInit & { next?: NextFetchRequestConfig });
+    };
+
+    this.client = createClient({
+      baseUrl: basePath,
+      fetch: cachedFetch as any
+    });
   }
 
-  async getUserTransactions(address: string, limit: number = 50, offset: number = 0): Promise<Transaction[]> {
+  async getUserTransactions(address: string, limit: number = 50, offset: number = 0): Promise<any[]> {
     try {
-      const resp = await this.txApi.getTransactionsByAddress({ address, limit, offset });
-      const txs = resp?.results || [];
-      return txs as Transaction[];
+      const { data, error } = await this.client.GET('/extended/v1/address/{principal}/transactions', {
+        params: {
+          path: { principal: address },
+          query: { limit, offset }
+        }
+      });
+      
+      if (error) {
+        console.error('getUserTransactions error', error);
+        return [];
+      }
+      
+      return data?.results || [];
     } catch (err) {
       console.error('getUserTransactions error', err);
       return [];
     }
   }
 
-  async fetchAllTransactions(address: string, maxTransactions: number = 1000): Promise<Transaction[]> {
-    const all: Transaction[] = [];
+  async fetchAllTransactions(address: string, maxTransactions: number = 1000): Promise<any[]> {
+    const all: any[] = [];
     let offset = 0;
     const limit = 50;
 
@@ -45,8 +63,21 @@ export class StacksDataService {
 
   async fetchFungibleTokenBalances(address: string) {
     try {
-      const balances = await this.ftApi.getFungibleTokenBalances({ address });
-      return balances?.results || [];
+      const { data, error } = await this.client.GET('/extended/v1/address/{principal}/balances', {
+        params: {
+          path: { principal: address }
+        }
+      });
+      
+      if (error) {
+        console.error('fetchFungibleTokenBalances error', error);
+        return [];
+      }
+      
+      return data?.fungible_tokens ? Object.entries(data.fungible_tokens).map(([asset, balance]) => ({
+        asset: { symbol: asset.split('::')[1] || asset },
+        balance
+      })) : [];
     } catch (err) {
       console.error('fetchFungibleTokenBalances error', err);
       return [];
@@ -55,8 +86,18 @@ export class StacksDataService {
 
   async fetchNftHoldings(address: string) {
     try {
-      const holdings = await this.nftApi.getNonFungibleTokenHoldings({ principal: address });
-      return holdings?.results || [];
+      const { data, error } = await this.client.GET('/extended/v2/addresses/{address}/nft-events' as any, {
+        params: {
+          path: { address }
+        }
+      });
+      
+      if (error) {
+        console.error('fetchNftHoldings error', error);
+        return [];
+      }
+      
+      return (data as any)?.results || [];
     } catch (err) {
       console.error('fetchNftHoldings error', err);
       return [];
@@ -67,7 +108,7 @@ export class StacksDataService {
    * Calculate the largest native STX transfer from a list of transactions.
    * Returns amount in STX (not micro-STX) and the transaction id.
    */
-  public calculateLargestStxTransfer(transactions: Transaction[]): { amountStx: number; txId: string } | null {
+  public calculateLargestStxTransfer(transactions: any[]): { amountStx: number; txId: string } | null {
     let maxAmountUSTX = 0n;
     let maxTxId: string | null = null;
 

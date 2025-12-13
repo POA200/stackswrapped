@@ -1,14 +1,3 @@
-/**
- * FILE: apps/app/src/app/api/wrapped/route.ts
- *
- * PURPOSE: A Next.js Route Handler (API Route) that aggregates all user data, runs the classification logic, and returns the final, structured metrics to the client.
- *
- * STACK CONTEXT:
- * - Next.js Route Handler (Server-Side Execution).
- * - Imports: StacksDataService and classifyUser from your monorepo packages.
- * - Endpoint: GET /api/wrapped?address=SP...
- */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { StacksDataService } from '../../../../../../packages/data-service/src/StacksDataService';
 import { classifyUser } from '../../../../../../packages/data-service/src/UserClassifier';

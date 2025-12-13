@@ -25,7 +25,7 @@ export function TopProtocolsCard({
 }: TopProtocolsCardProps) {
   const protocolData = data || {
     protocols: [
-      { name: "ALEX", interactions: 245 },
+      { name: "Bitflow", interactions: 245 },
       { name: "Velar", interactions: 189 },
       { name: "StackingDAO", interactions: 156 },
       { name: "Arkadiko", interactions: 98 },

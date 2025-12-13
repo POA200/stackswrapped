@@ -2,7 +2,6 @@
 
 import { CardFrame } from "@/components/data-display/CardFrame";
 import { Sparkles } from "lucide-react";
-import Image from "next/image";
 
 interface NFTCardProps {
   data?: {
@@ -28,10 +27,10 @@ export function NFTCard({ data, navigationProps, progress }: NFTCardProps) {
   const nftData = data || {
     totalNFTs: 42,
     topNFTs: [
-      { name: "Stacks Punk #1234", collection: "Stacks Punks", rarity: 98 },
-      { name: "Bitcoin Monkey #567", collection: "BTC Monkeys", rarity: 95 },
-      { name: "Megapont #890", collection: "Megaponts", rarity: 92 },
-      { name: "Stacks City #234", collection: "Stacks City", rarity: 88 },
+      { name: "Leo Cats #1234", collection: "Leo Cats", rarity: 98 },
+      { name: "Giga pepe v2 #567", collection: "Giga pepe v2", rarity: 95 },
+      { name: "NOT Punk #890", collection: "NOT Punks", rarity: 92 },
+      { name: "Spagetti Punk #234", collection: "Spagetti Punks", rarity: 88 },
       { name: "Crash Punk #456", collection: "Crash Punks", rarity: 85 },
     ],
   };
@@ -39,6 +38,7 @@ export function NFTCard({ data, navigationProps, progress }: NFTCardProps) {
   return (
     <CardFrame
       title="The Curator: NFT Edition"
+      isDemo={!data}
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}

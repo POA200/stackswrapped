@@ -34,9 +34,35 @@ interface WrappedApiResponse {
   };
 }
 
-export default async function FinalBadgeCardPage() {
-  // Hardcoded test address for development/testing (same as Volume Card)
-  const testAddress = "SP000000000000000000002Q6V5D";
+export default async function FinalBadgeCardPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  // Extract the user's Stacks address from URL query parameters
+  const userAddress = searchParams.address as string;
+
+  // Validate that the address exists
+  if (!userAddress || typeof userAddress !== "string") {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold text-destructive">
+            Missing Address
+          </h1>
+          <p className="text-muted-foreground">
+            No Stacks address provided. Please connect your wallet.
+          </p>
+          <a
+            href="/"
+            className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          >
+            Return to Home
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   let badgeData = null;
   let error = null;
@@ -47,7 +73,7 @@ export default async function FinalBadgeCardPage() {
       "/api/wrapped",
       process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
     );
-    apiUrl.searchParams.set("address", testAddress);
+    apiUrl.searchParams.set("address", userAddress);
 
     // Fetch data from the internal API endpoint using Node.js fetch
     const response = await fetch(apiUrl.toString(), {

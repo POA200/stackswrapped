@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight, Download, LogOut, Share2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, LogOut } from "lucide-react";
 import Image from "next/image";
 import { useRef } from "react";
 import { HtmlToImageShare } from "@/components/logic/HtmlToImageShare";
@@ -10,15 +10,16 @@ import { HtmlToImageDownload } from "@/components/logic/HtmlToImageDownload";
 
 interface CardFrameProps {
   title?: string;
-  badgeTitle?: string; // preferred badge title for sharing
+  badgeTitle?: string;
   children: React.ReactNode;
+  isDemo?: boolean;
   showPrev?: boolean;
   showNext?: boolean;
   onPrev?: () => void;
   onNext?: () => void;
   onDisconnect?: () => void;
-  currentStep?: number; // 0-based index
-  totalSteps?: number; // total number of cards
+  currentStep?: number;
+  totalSteps?: number;
 }
 
 export function CardFrame({
@@ -75,6 +76,7 @@ export function CardFrame({
             alt=""
             width={128}
             height={128}
+            loading="eager"
             className="absolute top-1/2 right-1/4 w-32 h-32 animate-float"
           />
           <Image
@@ -82,6 +84,7 @@ export function CardFrame({
             alt=""
             width={96}
             height={96}
+            loading="eager"
             className="absolute bottom-1/4 left-1/4 w-24 h-24 animate-pulse"
           />
           <Image
@@ -106,9 +109,9 @@ export function CardFrame({
                 alt="Stacks Wrapped"
                 width={32}
                 height={32}
-                className="object-contain"
+                className="w-8 h-8 object-contain"
               />
-              <h2 className="text-lg font-medium text-primary">
+              <h2 className="text-md font-medium text-primary">
                 Stacks <span className="text-primary/50">Wrapped</span>
               </h2>
             </div>

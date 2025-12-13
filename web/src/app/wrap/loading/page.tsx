@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Wallet, Check } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { fetchVolumeStats, type VolumeStats } from "@/lib/stacks-data";
+// Client loading page should not call on-chain APIs directly to avoid CORS.
 
 const loadingMessages = [
   "Querying 365 days of on-chain history...",
@@ -36,7 +36,6 @@ function LoadingContent() {
   const address = searchParams.get("address");
   const [progress, setProgress] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
-  const [volumeData, setVolumeData] = useState<VolumeStats | null>(null);
   const [dataFetched, setDataFetched] = useState(false);
 
   useEffect(() => {
@@ -47,26 +46,8 @@ function LoadingContent() {
 
     let cancelled = false;
 
-    // Fetch volume data immediately
-    const fetchData = async () => {
-      try {
-        console.log("Fetching volume stats for:", address);
-        const stats = await fetchVolumeStats(address);
-        if (!cancelled) {
-          console.log("Volume stats fetched:", stats);
-          setVolumeData(stats);
-          setDataFetched(true);
-        }
-      } catch (err) {
-        console.error("Failed to fetch volume stats:", err);
-        if (!cancelled) {
-          setVolumeData(null);
-          setDataFetched(true); // Mark as fetched even on error, so we proceed
-        }
-      }
-    };
-
-    fetchData();
+    // Do not fetch on-chain data client-side. Proceed with progress and route.
+    setDataFetched(true);
 
     // Cycle through messages
     const messageInterval = setInterval(() => {
@@ -78,16 +59,13 @@ function LoadingContent() {
       setProgress((prev) => {
         const newProgress = Math.min(prev + Math.random() * 20 + 8, 95);
 
-        // Once data is fetched and progress is high, complete it
+        // Complete once progress is high and we've flagged ready
         if (dataFetched && newProgress >= 90) {
           clearInterval(progressInterval);
           clearInterval(messageInterval);
 
           // Navigate with the fetched data stored
           setTimeout(() => {
-            if (volumeData) {
-              sessionStorage.setItem("volumeData", JSON.stringify(volumeData));
-            }
             router.push(`/wrap/volume?address=${encodeURIComponent(address)}`);
           }, 200);
           return 100;
@@ -102,7 +80,7 @@ function LoadingContent() {
       clearInterval(progressInterval);
       clearInterval(messageInterval);
     };
-  }, [address, router, dataFetched, volumeData]);
+  }, [address, router, dataFetched]);
 
   const truncateAddress = (addr: string) => {
     if (addr.length <= 10) return addr;

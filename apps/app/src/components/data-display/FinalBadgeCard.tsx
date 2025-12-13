@@ -1,6 +1,6 @@
 "use client";
 
-import { CardFrame } from "@/components/data-display/CardFrame";
+import { CardFrame } from "../../../../../web/src/components/data-display/CardFrame";
 import { Crown } from "lucide-react";
 import Image from "next/image";
 

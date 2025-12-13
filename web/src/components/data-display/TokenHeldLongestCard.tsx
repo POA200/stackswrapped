@@ -2,13 +2,13 @@
 
 import { CardFrame } from "@/components/data-display/CardFrame";
 import Image from "next/image";
-import { Clock } from "lucide-react";
+import { CircleDot, Clock } from "lucide-react";
 
 interface TokenHeldLongestCardProps {
   data?: {
     token?: string;
-    sinceDate?: string; // e.g., "Jan 12, 2021"
-    daysHeld?: number; // e.g., 712
+    sinceDate?: string;
+    daysHeld?: number;
   };
   navigationProps?: {
     showPrev?: boolean;
@@ -26,7 +26,7 @@ export function TokenHeldLongestCard({
   progress,
 }: TokenHeldLongestCardProps) {
   const card = data || {
-    token: "$TOKEN",
+    token: "$STX",
     sinceDate: "[Date]",
     daysHeld: 123,
   };
@@ -88,7 +88,7 @@ export function TokenHeldLongestCard({
 
         {/* Token Logo Placeholder */}
         <div className="flex items-center justify-center w-24 h-24 rounded-full border-2 border-primary/30 bg-primary/10 text-[11px] text-primary z-10 bottom-4">
-          <Clock className="w-10 h-10 text-primary" />
+          <CircleDot className="w-10 h-10 text-primary" />
         </div>
       </div>
     </CardFrame>

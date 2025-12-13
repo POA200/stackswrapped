@@ -13,3 +13,8 @@ web/node_modules/
 
 # Turbo Cache
 .turbo
+
+packages/data-service/.turbo
+packages/data-service/node_modules/.turbo
+apps/app/.turbo
+apps/app/node_modules/.turbo

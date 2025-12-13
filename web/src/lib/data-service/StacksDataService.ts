@@ -57,7 +57,10 @@ export class StacksDataService {
       const data = await this.accounts.getAccountBalance({ principal: address });
       const ft = (data as any)?.fungible_tokens;
       return ft ? Object.entries(ft).map(([asset, balance]) => ({
-        asset: { symbol: asset.split('::')[1] || asset },
+        asset: { 
+          symbol: asset.split('::')[1] || asset,
+          identifier: asset 
+        },
         balance
       })) : [];
     } catch (err) {

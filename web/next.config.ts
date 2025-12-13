@@ -9,6 +9,30 @@ const nextConfig: NextConfig = {
     maxInactiveAge: 60 * 60 * 1000,
     pagesBufferLength: 5,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ipfs.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'assets.alexlab.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.alexlab.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.citycoins.co',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

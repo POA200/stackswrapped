@@ -14,21 +14,37 @@ export async function GET(request: NextRequest) {
     const service = new StacksDataService();
 
     const fetchTokenTransfers = async (addr: string, max = 2000) => {
-      const limit = 200;
-      let offset = 0;
-      const all: any[] = [];
-      while (all.length < max) {
-        const url = `https://api.mainnet.hiro.so/extended/v1/address/${addr}/token_transfers?limit=${limit}&offset=${offset}`;
-        const res = await fetch(url, { next: { revalidate: 300 } });
-        if (!res.ok) break;
-        const data = await res.json();
-        const results = (data as any)?.results || [];
-        if (!results.length) break;
-        all.push(...results);
-        offset += results.length;
-        if (results.length < limit) break;
+      try {
+        const limit = 200;
+        let offset = 0;
+        const all: any[] = [];
+        while (all.length < max) {
+          const url = `https://api.mainnet.hiro.so/extended/v1/address/${addr}/token_transfers?limit=${limit}&offset=${offset}`;
+          try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 5000);
+            const res = await fetch(url, { 
+              next: { revalidate: 300 },
+              signal: controller.signal
+            });
+            clearTimeout(timeout);
+            if (!res.ok) break;
+            const data = await res.json();
+            const results = (data as any)?.results || [];
+            if (!results.length) break;
+            all.push(...results);
+            offset += results.length;
+            if (results.length < limit) break;
+          } catch (pageErr) {
+            console.warn(`[fetchTokenTransfers] page fetch failed at offset ${offset}:`, pageErr);
+            break;
+          }
+        }
+        return all.slice(0, max);
+      } catch (err) {
+        console.warn('[fetchTokenTransfers] error:', err);
+        return [];
       }
-      return all.slice(0, max);
     };
 
     // Fetch raw data
@@ -36,7 +52,14 @@ export async function GET(request: NextRequest) {
     const transactions = await service.fetchAllTransactions(address, max);
     const { allNfts: nftHoldings, total: nftTotal } = await service.fetchFullNftHoldings(address);
     const ftBalances = await service.fetchFungibleTokenBalances(address);
-    const tokenTransfers = await fetchTokenTransfers(address);
+    
+    let tokenTransfers: any[] = [];
+    try {
+      tokenTransfers = await fetchTokenTransfers(address);
+    } catch (err) {
+      console.warn('[/api/wrapped] fetchTokenTransfers failed, continuing without:', err);
+      tokenTransfers = [];
+    }
 
     const toDate = (value: any): Date | null => {
       if (!value) return null;
@@ -66,6 +89,19 @@ export async function GET(request: NextRequest) {
       const parts = assetId.split('::');
       return parts[1] || parts[0] || assetId;
     };
+
+    // Create a map of token names to contract IDs for logo fetching
+    const tokenNameToContractId = new Map<string, string>();
+    if (Array.isArray(ftBalances)) {
+      ftBalances.forEach((ft: any) => {
+        const assetId = ft.asset?.identifier || ft.asset?.asset_id || '';
+        const name = ft.asset?.symbol || nameFromAssetId(assetId);
+        if (name && assetId && name !== 'STX' && name !== 'stx') {
+          tokenNameToContractId.set(name, assetId);
+        }
+      });
+    }
+    console.log(`[/api/wrapped] Token name to contract ID map:`, Array.from(tokenNameToContractId.entries()).slice(0, 5));
 
     let nftTransactionCount = 0;
     transactions.forEach((tx: any) => {
@@ -175,20 +211,40 @@ export async function GET(request: NextRequest) {
     // Fallback: include current FT balances so tokens appear even without transfer events
     if (ftBalances && ftBalances.length > 0) {
       ftBalances.forEach((ft: any) => {
-        const assetId = ft.asset?.identifier || ft.asset?.asset_id || ft.asset?.symbol || '';
-        const name = ft.asset?.symbol || nameFromAssetId(assetId);
-        if (!name) return;
-        if (tokenFirstSeen.has(name)) return;
+        // Extract name from various possible paths in the balance object
+        const assetId = ft.asset?.identifier || ft.asset?.asset_id || '';
+        let name = ft.asset?.symbol || nameFromAssetId(assetId);
+        
+        // If we got just "sbtc-token" from symbol, use full asset ID extraction
+        if (!name.includes('::') && assetId.includes('::')) {
+          name = nameFromAssetId(assetId);
+        }
+        
+        if (!name || name === 'STX' || name === 'stx') {
+          return;
+        }
+        
         try {
-          const bal = BigInt(ft.balance?.toString() || '0');
-          if (bal === BigInt(0)) return;
-        } catch {
+          let balStr = ft.balance;
+          if (typeof balStr === 'object') {
+            balStr = ft.balance?.balance || ft.balance?.total_sent || ft.balance?.total_received || '0';
+          }
+          const bal = BigInt(balStr?.toString?.() || '0');
+          // Include token if it has activity (total_sent > 0 or total_received > 0)
+          if (bal === BigInt(0) && ft.balance?.total_sent === '0' && ft.balance?.total_received === '0') {
+            return;
+          }
+        } catch (e) {
           // If balance can't parse, still include as a fallback token
         }
-        const fallbackDate = earliestTxDate || year2025Start;
-        tokenFirstSeen.set(name, fallbackDate);
-        if (fallbackDate >= year2025Start && fallbackDate < year2025End) {
-          tokenSeenIn2025.set(name, fallbackDate);
+        
+        // Add all non-zero FT balances, even if already in tokenFirstSeen
+        if (!tokenFirstSeen.has(name)) {
+          const fallbackDate = earliestTxDate || year2025Start;
+          tokenFirstSeen.set(name, fallbackDate);
+          if (fallbackDate >= year2025Start && fallbackDate < year2025End) {
+            tokenSeenIn2025.set(name, fallbackDate);
+          }
         }
       });
     }
@@ -244,10 +300,47 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     const toDaysHeld = (start: Date) => Math.max(0, Math.floor((now.getTime() - start.getTime()) / 86_400_000));
 
-    // Prefer tokens with 2025 activity; if none, fall back to all-time first-seen
-    const tokenEntries = tokenSeenIn2025.size > 0 ? tokenSeenIn2025.entries() : tokenFirstSeen.entries();
+    // Define FT metadata fetcher before using it
+    const ftMetadataCache = new Map<string, any>();
 
-    const topTokensHeldLongest = Array.from(tokenEntries)
+    const fetchFTMetadata = async (contractId: string): Promise<any | null> => {
+      if (ftMetadataCache.has(contractId)) return ftMetadataCache.get(contractId);
+      
+      // Extract contract address and name from full identifier
+      const parts = contractId.split('::');
+      const contractAddress = parts[0]; // e.g., "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token"
+      
+      const url = `https://api.mainnet.hiro.so/extended/v1/contract/${contractAddress}`;
+      try {
+        const res = await fetch(url, { next: { revalidate: 900 } });
+        if (!res.ok) throw new Error(`contract metadata ${res.status}`);
+        const data = await res.json();
+        
+        // Try to extract token-uri from source code or variables
+        let logo: string | undefined;
+        const source = data.source_code || '';
+        
+        // Look for token-uri in the source code
+        const uriMatch = source.match(/token-uri.*?u"([^"]+)"/);
+        if (uriMatch && uriMatch[1]) {
+          logo = uriMatch[1];
+        }
+        
+        const metadata = { image_uri: logo };
+        ftMetadataCache.set(contractId, metadata);
+        return metadata;
+      } catch (err) {
+        ftMetadataCache.set(contractId, null);
+        return null;
+      }
+    };
+
+    // Prefer tokens with 2025 activity; if none, fall back to all-time first-seen
+    // Always include all-time SIP-010 tokens from FT balances
+    const combined = new Map([...tokenSeenIn2025.entries(), ...tokenFirstSeen.entries()]);
+    const tokenEntries = combined.entries();
+
+    const topTokensBase = Array.from(tokenEntries)
       .map(([name, firstDate]) => ({
         name,
         sinceDate: firstDate.toISOString(),
@@ -255,6 +348,36 @@ export async function GET(request: NextRequest) {
       }))
       .sort((a, b) => b.daysHeld - a.daysHeld)
       .slice(0, 5);
+
+    // Fetch logos for top tokens
+    const topTokensHeldLongest = await Promise.all(
+      topTokensBase.map(async (token) => {
+        let logo: string | undefined;
+        try {
+          const contractId = tokenNameToContractId.get(token.name);
+          if (contractId) {
+            const metadata = await fetchFTMetadata(contractId);
+            logo = metadata?.image_uri || metadata?.logo || metadata?.image;
+            
+            // If no logo found, try using ALEX tokens API or common token logos
+            if (!logo) {
+              // Use a common pattern for well-known tokens
+              const tokenLogoMap: Record<string, string> = {
+                'sbtc-token': 'https://ipfs.io/ipfs/bafkreibqnozdui4ntgoh3oo437lvhg7qrsccmbzhgumwwjf2smb3eegyqu',
+                'alex': 'https://assets.alexlab.co/alex-logo-circle.png',
+                'aeusdc': 'https://assets.alexlab.co/aeusdc-logo.svg',
+                'NYC': 'https://cdn.citycoins.co/logos/newyorkcitycoin.png',
+                'MIA': 'https://cdn.citycoins.co/logos/miamicoin.png',
+              };
+              logo = tokenLogoMap[token.name];
+            }
+          }
+        } catch (err) {
+          console.warn(`[/api/wrapped] FT logo fetch failed for ${token.name}:`, err);
+        }
+        return { ...token, logo };
+      })
+    );
 
     const longestTokenHold = topTokensHeldLongest[0] || null;
 
@@ -313,18 +436,22 @@ export async function GET(request: NextRequest) {
         const tokenId = normalizeTokenId(tokenIdRaw);
         let image: string | undefined;
 
-        if (assetId) {
-          const metaList = await fetchImagesForAsset(assetId);
-          if (tokenId && Array.isArray(metaList)) {
-            const match = metaList.find((m: any) => normalizeTokenId(m.token_id) === tokenId);
-            image = match?.metadata?.image || match?.image || match?.metadata?.image_url;
-            if (!image) {
-              const tokenMeta = await fetchTokenMetadata(assetId, tokenId);
-              image = tokenMeta?.metadata?.image || tokenMeta?.image || tokenMeta?.metadata?.image_url;
+        try {
+          if (assetId) {
+            const metaList = await fetchImagesForAsset(assetId);
+            if (tokenId && Array.isArray(metaList)) {
+              const match = metaList.find((m: any) => normalizeTokenId(m.token_id) === tokenId);
+              image = match?.metadata?.image || match?.image || match?.metadata?.image_url;
+              if (!image) {
+                const tokenMeta = await fetchTokenMetadata(assetId, tokenId);
+                image = tokenMeta?.metadata?.image || tokenMeta?.image || tokenMeta?.metadata?.image_url;
+              }
+            } else if (metaList[0]) {
+              image = metaList[0]?.metadata?.image || metaList[0]?.image || metaList[0]?.metadata?.image_url;
             }
-          } else if (metaList[0]) {
-            image = metaList[0]?.metadata?.image || metaList[0]?.image || metaList[0]?.metadata?.image_url;
           }
+        } catch (imgErr) {
+          console.warn(`[/api/wrapped] NFT image fetch failed for ${assetId}::${tokenId}:`, imgErr);
         }
 
         return { ...nft, image };

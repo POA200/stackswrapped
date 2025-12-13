@@ -7,7 +7,12 @@ import Image from "next/image";
 interface TopTokensCardProps {
   address?: string;
   data?: {
-    tokens: Array<{ name: string; daysHeld: number; sinceDate?: string }>;
+    tokens: Array<{
+      name: string;
+      daysHeld: number;
+      sinceDate?: string;
+      logo?: string;
+    }>;
   };
   navigationProps?: {
     showPrev?: boolean;
@@ -107,20 +112,23 @@ export function TopTokensCard({
                 <div className="w-6 text-lg font-semibold text-orange-500 text-right">
                   {index + 1}
                 </div>
-                <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/10">
-                  <Gem className="w-4 h-4 text-primary" />
+                <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/10 overflow-hidden">
+                  {token.logo ? (
+                    <Image
+                      src={token.logo}
+                      alt={token.name}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <Gem className="w-4 h-4 text-primary" />
+                  )}
                 </div>
                 <div className="flex-1">
                   <p className="text-lg font-semibold text-primary leading-snug">
                     {token.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Held for {token.daysHeld ?? 0} days
-                    {token.sinceDate
-                      ? ` (since ${new Date(
-                          token.sinceDate
-                        ).toLocaleDateString()})`
-                      : ""}
                   </p>
                 </div>
               </div>

@@ -5,6 +5,7 @@ import { DollarSign } from "lucide-react";
 import Image from "next/image";
 
 interface LargestTransactionCardProps {
+  address?: string;
   data?: {
     amount?: number;
   };
@@ -19,6 +20,7 @@ interface LargestTransactionCardProps {
 }
 
 export function LargestTransactionCard({
+  address,
   data,
   navigationProps,
   progress,
@@ -33,6 +35,7 @@ export function LargestTransactionCard({
   return (
     <CardFrame
       title="The Whale's Splash"
+      address={address}
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}

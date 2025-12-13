@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CircleDot, Clock } from "lucide-react";
 
 interface TokenHeldLongestCardProps {
+  address?: string;
   data?: {
     token?: string;
     sinceDate?: string;
@@ -21,19 +22,64 @@ interface TokenHeldLongestCardProps {
 }
 
 export function TokenHeldLongestCard({
+  address,
   data,
   navigationProps,
   progress,
 }: TokenHeldLongestCardProps) {
-  const card = data || {
-    token: "$STX",
-    sinceDate: "[Date]",
-    daysHeld: 123,
-  };
+  if (!data) {
+    return (
+      <CardFrame
+        title="Token Held Longest"
+        address={address}
+        showPrev={navigationProps?.showPrev}
+        showNext={navigationProps?.showNext}
+        onPrev={navigationProps?.onPrev}
+        onNext={navigationProps?.onNext}
+        onDisconnect={navigationProps?.onDisconnect}
+        currentStep={progress?.current}
+        totalSteps={progress?.total}
+      >
+        <div className="w-full h-full flex items-center justify-center px-4 py-6">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p className="text-sm text-muted-foreground text-center">
+              Loading your longest-held token...
+            </p>
+          </div>
+        </div>
+      </CardFrame>
+    );
+  }
+
+  if (!data.token) {
+    return (
+      <CardFrame
+        title="Token Held Longest"
+        address={address}
+        showPrev={navigationProps?.showPrev}
+        showNext={navigationProps?.showNext}
+        onPrev={navigationProps?.onPrev}
+        onNext={navigationProps?.onNext}
+        onDisconnect={navigationProps?.onDisconnect}
+        currentStep={progress?.current}
+        totalSteps={progress?.total}
+      >
+        <div className="w-full h-full flex items-center justify-center px-4 py-6">
+          <p className="text-sm text-muted-foreground text-center">
+            No token hold data found.
+          </p>
+        </div>
+      </CardFrame>
+    );
+  }
+
+  const card = data;
 
   return (
     <CardFrame
       title="Token Held Longest"
+      address={address}
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}

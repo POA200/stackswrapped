@@ -5,6 +5,7 @@ import { CircleDot } from "lucide-react";
 import Image from "next/image";
 
 interface TopProtocolCardProps {
+  address?: string;
   data?: {
     protocolName?: string;
     contractCalls?: number;
@@ -20,6 +21,7 @@ interface TopProtocolCardProps {
 }
 
 export function TopProtocolCard({
+  address,
   data,
   navigationProps,
   progress,
@@ -32,6 +34,7 @@ export function TopProtocolCard({
   return (
     <CardFrame
       title="DeFi Home Base"
+      address={address}
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}

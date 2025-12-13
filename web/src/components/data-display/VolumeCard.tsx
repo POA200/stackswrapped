@@ -4,6 +4,12 @@ import { useMemo } from "react";
 import { CardFrame } from "@/components/data-display/CardFrame";
 import { TrendingUp } from "lucide-react";
 import Image from "next/image";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import * as Recharts from "recharts";
 import type { VolumeStats } from "@/lib/stacks-data";
 
 interface VolumeCardProps {
@@ -30,6 +36,7 @@ export function VolumeCard({
     return (
       <CardFrame
         title="The Volume (Transactions)"
+        address={address}
         showPrev={navigationProps?.showPrev}
         showNext={navigationProps?.showNext}
         onPrev={navigationProps?.onPrev}
@@ -54,6 +61,7 @@ export function VolumeCard({
     <CardFrame
       title="The Volume (Transactions)"
       isDemo={data.totalTransactions === 0}
+      address={address}
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}
@@ -74,14 +82,14 @@ export function VolumeCard({
             className="w-full h-full -z-10 pointer-events-none"
           />
         </div>
-        <div className="absolute bottom-3 right-0 w-26 h-auto -z-10 pointer-events-none">
+        <div className="absolute top-0 right-0 w-26 h-auto -z-10 pointer-events-none">
           <Image
             src="/VolumeCardSticker2.svg"
             alt=""
             width={80}
             height={80}
             loading="eager"
-            className="w-full h-full -z-10 pointer-events-none"
+            className="w-full h-full -z-10 pointer-events-none transform rotate-180 scale-x-[-1]"
           />
         </div>
 
@@ -130,6 +138,41 @@ export function VolumeCard({
                 Math.round(data.totalTransactions / 12)}
             </p>
           </div>
+        </div>
+
+        {/* Monthly Transactions Chart */}
+        <div className="w-full z-10">
+          <ChartContainer
+            className="mt-3 h-44 w-full"
+            config={{
+              transactions: {
+                label: "Transactions",
+                color: "oklch(0.541 0.281 293.009)",
+              },
+            }}
+          >
+            <Recharts.BarChart
+              data={data.monthlyData}
+              margin={{ top: 4, right: 8, left: 8, bottom: 0 }}
+            >
+              <Recharts.CartesianGrid strokeDasharray="3 3" />
+              <Recharts.XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+              />
+              <Recharts.YAxis tickLine={false} axisLine={false} width={24} />
+              <ChartTooltip
+                content={<ChartTooltipContent nameKey="transactions" />}
+              />
+              <Recharts.Bar
+                dataKey="count"
+                name="transactions"
+                fill="oklch(0.541 0.281 293.009)"
+                radius={[4, 4, 0, 0]}
+              />
+            </Recharts.BarChart>
+          </ChartContainer>
         </div>
       </div>
     </CardFrame>

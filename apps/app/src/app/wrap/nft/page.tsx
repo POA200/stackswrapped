@@ -1,47 +1,38 @@
 /**
  * FILE: apps/app/src/app/wrap/nft/page.tsx
  *
- * PURPOSE: A Server Component that retrieves the user's Stacks address from the URL, fetches the full wrapped data, and renders the existing NFTCard client component.
+ * PURPOSE: A Server Component that retrieves the user's Stacks address from the URL, fetches the full wrapped data, and renders the existing NftCard client component.
  *
  * STACK CONTEXT:
- * - Next.js Server Component.
- * - Imports: NFTCard from the shared web components, and routing utilities from '/lib/constants.ts'.
+ * - Must be a Next.js Server Component.
+ * - Imports: NftCard from '@/data-display/NftCard', and routing utilities from '@/lib/constants'.
+ * - Assumes the overall API response contains an NFT metric structure under `metrics`.
  */
 
-import { NFTCard } from "../../../../../../web/src/components/data-display/NFTCard";
-import { getNavigationPaths, getProgress } from "../../../lib/constants";
+import { NFTCard as NftCard } from "@/data-display/NFTCard";
+import { getNavigationPaths, getProgress } from "@/lib/constants";
 
-// Type definition for the API response
-interface WrappedApiResponse {
-  address: string;
-  metrics: {
-    totalTransactions: number;
-    firstTxDate: string | null;
-    busiestMonth: string | null;
-    longestHoldDays: number;
-    volumeUSD: number;
-    nftCount: number;
-    topToken: string;
+type NftMetric = {
+  totalNFTs: number;
+  topNFTs?: Array<{ name: string; collection: string; rarity?: number }>;
+};
+
+type WrappedApiResponse = {
+  metrics?: {
+    nft?: NftMetric;
+    nftCount?: number;
+    topNFTs?: Array<{ name: string; collection: string; rarity?: number }>;
   };
-  badge: {
-    title: string;
-  };
-  raw: {
-    transactionsCount: number;
-    nftHoldingsCount: number;
-    ftBalancesCount: number;
-  };
-}
+};
 
 export default async function NftCardPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  // Extract the user's Stacks address from URL query parameters
-  const userAddress = searchParams.address as string;
+  const rawAddress = searchParams.address;
+  const userAddress = Array.isArray(rawAddress) ? rawAddress[0] : rawAddress;
 
-  // Validate that the address exists
   if (!userAddress || typeof userAddress !== "string") {
     return (
       <div className="w-full h-screen flex items-center justify-center">
@@ -63,23 +54,18 @@ export default async function NftCardPage({
     );
   }
 
-  // Get navigation paths and progress for the current page
   const currentPath = "/wrap/nft";
   const { prevPath, nextPath } = getNavigationPaths(currentPath);
   const progress = getProgress(currentPath);
 
-  let nftData = null;
-  let error = null;
+  let nftData: NftMetric | null = null;
+  let error: string | null = null;
 
   try {
-    // Construct the full URL for the internal API endpoint
-    const apiUrl = new URL(
-      "/api/wrapped",
-      process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-    );
+    const apiBase = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const apiUrl = new URL("/api/wrapped", apiBase);
     apiUrl.searchParams.set("address", userAddress);
 
-    // Fetch data from the internal API endpoint using Node.js fetch
     const response = await fetch(apiUrl.toString(), {
       method: "GET",
       headers: {
@@ -92,26 +78,23 @@ export default async function NftCardPage({
     }
 
     const data: WrappedApiResponse = await response.json();
+    const metrics = data.metrics || {};
+    const nftMetric = metrics.nft || {
+      totalNFTs: metrics.nftCount || 0,
+      topNFTs: metrics.topNFTs,
+    };
 
-    // Transform API response to NFT data format expected by NFTCard
-    // TODO: When the API provides actual NFT details, map them here
     nftData = {
-      totalNFTs: data.metrics.nftCount,
-      topNFTs: [
-        // Placeholder until API provides actual NFT details
-        { name: "NFT #1", collection: "Collection", rarity: 98 },
-        { name: "NFT #2", collection: "Collection", rarity: 95 },
-        { name: "NFT #3", collection: "Collection", rarity: 92 },
-        { name: "NFT #4", collection: "Collection", rarity: 88 },
-        { name: "NFT #5", collection: "Collection", rarity: 85 },
-      ],
+      totalNFTs: nftMetric.totalNFTs ?? 0,
+      topNFTs: Array.isArray(nftMetric.topNFTs)
+        ? nftMetric.topNFTs.slice(0, 5)
+        : undefined,
     };
   } catch (err) {
     console.error("Error fetching NFT data:", err);
     error = err instanceof Error ? err.message : "Failed to fetch NFT data";
   }
 
-  // Error UI fallback
   if (error) {
     return (
       <div className="w-full h-screen flex items-center justify-center">
@@ -128,9 +111,9 @@ export default async function NftCardPage({
     );
   }
 
-  // Render the NFTCard component with fetched data and navigation props
   return (
-    <NFTCard
+    <NftCard
+      address={userAddress}
       data={nftData || undefined}
       navigationProps={{
         showPrev: prevPath !== null,

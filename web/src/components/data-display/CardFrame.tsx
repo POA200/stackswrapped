@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, LogOut } from "lucide-react";
 import Image from "next/image";
@@ -18,6 +19,7 @@ interface CardFrameProps {
   onPrev?: () => void;
   onNext?: () => void;
   onDisconnect?: () => void;
+  address?: string;
   currentStep?: number;
   totalSteps?: number;
 }
@@ -31,12 +33,17 @@ export function CardFrame({
   onPrev,
   onNext,
   onDisconnect,
+  address,
   currentStep,
   totalSteps,
 }: CardFrameProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-
-  // header share/download removed; Share/Save moved to footer via HtmlToImageShare
+  const splitAddress = (addr?: string) => {
+    if (!addr) return "";
+    const start = addr.slice(0, 6);
+    const end = addr.slice(-4);
+    return `${start}…${end}`;
+  };
 
   return (
     <>
@@ -116,6 +123,9 @@ export function CardFrame({
               </h2>
             </div>
             <div className="flex items-center gap-2">
+              <Badge variant="default" className="text-xs">
+                {splitAddress(address)}
+              </Badge>
               <HtmlToImageShare
                 targetRef={cardRef as any}
                 cardTitle={title || "Card"}
@@ -129,15 +139,16 @@ export function CardFrame({
                 )}.png`}
               />
               {onDisconnect && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onDisconnect}
-                  className="text-xs"
-                >
-                  <LogOut className="w-4 h-4 mr-1" />
-                  Disconnect Wallet
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onDisconnect}
+                    className="text-xs"
+                  >
+                    <LogOut className="w-4 h-4 mr-1" />
+                  </Button>
+                </div>
               )}
             </div>
           </div>
@@ -158,7 +169,6 @@ export function CardFrame({
                 className="gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Previous
               </Button>
               <Button
                 variant="outline"
@@ -167,7 +177,6 @@ export function CardFrame({
                 disabled={!showNext}
                 className="gap-2"
               >
-                Next
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>

@@ -4,6 +4,7 @@ import { CardFrame } from "@/components/data-display/CardFrame";
 import Image from "next/image";
 
 interface BadgeCardProps {
+  address?: string;
   data?: {
     badgeTitle?: string;
     badgeDescription?: string;
@@ -19,7 +20,12 @@ interface BadgeCardProps {
   progress?: { current: number; total: number };
 }
 
-export function BadgeCard({ data, navigationProps, progress }: BadgeCardProps) {
+export function BadgeCard({
+  address,
+  data,
+  navigationProps,
+  progress,
+}: BadgeCardProps) {
   const card = data || {
     badgeTitle: "The HODL Hero",
     badgeDescription:
@@ -31,6 +37,7 @@ export function BadgeCard({ data, navigationProps, progress }: BadgeCardProps) {
     <CardFrame
       title="Your 2025 Badge"
       badgeTitle={card.badgeTitle}
+      address={address}
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}

@@ -13,6 +13,7 @@ import { TopProtocolCard } from "@/components/data-display/TopProtocolCard";
 import { LargestTransactionCard } from "@/components/data-display/LargestTransactionCard";
 import { BadgeCard } from "@/components/data-display/BadgeCard";
 import type { VolumeStats } from "@/lib/stacks-data";
+import { dataCache } from "@/lib/data-cache";
 
 // Define the card sequence
 const CARD_SEQUENCE = [
@@ -39,6 +40,13 @@ export default function CardPage({
   const [cardId, setCardId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [volumeData, setVolumeData] = useState<VolumeStats | null>(null);
+  const [nftData, setNftData] = useState<any>(null);
+  const [tokensData, setTokensData] = useState<any>(null);
+  const [longestTokenData, setLongestTokenData] = useState<any>(null);
+  const [wrappedResult, setWrappedResult] = useState<any>(null);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [badgeData, setBadgeData] = useState<any>(null);
+  const [finalBadgeData, setFinalBadgeData] = useState<any>(null);
 
   useEffect(() => {
     // Unwrap the params promise
@@ -48,9 +56,92 @@ export default function CardPage({
     });
   }, [params]);
 
-  // Fetch volume data when showing volume card
+  // Load cached data on mount
   useEffect(() => {
-    if (cardId === "volume" && address && !volumeData) {
+    if (!address) return;
+
+    const cached = dataCache.get(address);
+    if (cached) {
+      console.log("[CardPage] Using cached data");
+
+      // Load volume data
+      const volumeResult = cached.volumeData;
+      if (volumeResult) {
+        const totalTx = volumeResult.totalTransactions || 0;
+        const lookbackMonths = volumeResult.monthlyData?.length || 12;
+        const avgTx = Math.round(totalTx / lookbackMonths);
+
+        const volumeStats: VolumeStats = {
+          totalTransactions: totalTx,
+          busiestMonth: volumeResult.busiestMonth || "N/A",
+          firstTransactionDate: volumeResult.firstTransactionDate || "Unknown",
+          monthlyData: volumeResult.monthlyData || [],
+          avgTransactionsPerMonth:
+            volumeResult.avgTransactionsPerMonth || avgTx,
+        };
+
+        setVolumeData(volumeStats);
+      }
+
+      // Load wrapped data
+      const wrapped = cached.wrappedData;
+      if (wrapped?.metrics) {
+        setWrappedResult(wrapped);
+
+        const nftStats = {
+          totalNFTs: wrapped.metrics.nftCount || 0,
+          topNFTs: wrapped.metrics.topNFTs || [],
+        };
+        setNftData(nftStats);
+
+        const tokenList = (wrapped.metrics.topTokensHeldLongest || []).map(
+          (t: any) => ({
+            name: t.name,
+            daysHeld: t.daysHeld,
+            sinceDate: t.sinceDate,
+          })
+        );
+        setTokensData({ tokens: tokenList });
+
+        if (tokenList[0]) {
+          setLongestTokenData({
+            token: tokenList[0].name,
+            sinceDate: tokenList[0].sinceDate,
+            daysHeld: tokenList[0].daysHeld,
+          });
+        }
+
+        // Extract badge data
+        if (wrapped.badge) {
+          setBadgeData({
+            badgeTitle: wrapped.badge.title || "The HODL Hero",
+            badgeDescription:
+              wrapped.badge.description ||
+              "You earned this title by holding longer than 5% of Holders on Stacks this year",
+            badgeIconSrc: "/HodlHeroBadge.svg", // Default icon
+          });
+        }
+
+        // Extract final badge summary data
+        setFinalBadgeData({
+          badgeTitle: wrapped.badge?.title || "The HODL Hero",
+          badgeIconSrc: "/HodlHeroBadge.svg",
+          volume: wrapped.metrics?.volumeUSD || 0,
+          nftCount: wrapped.metrics?.nftCount || 0,
+          topToken: wrapped.metrics?.topToken || "STX",
+          tokenHeldDays: wrapped.metrics?.longestHoldDays || 0,
+          topProtocol: "BITFLOW", // Placeholder since not in API
+          largestTransaction: 5000, // Placeholder since not in API
+        });
+      }
+
+      setDataLoaded(true);
+    }
+  }, [address]);
+
+  // Fetch volume data when showing volume card (only if not cached)
+  useEffect(() => {
+    if (cardId === "volume" && address && !volumeData && !dataLoaded) {
       const fetchVolume = async () => {
         try {
           console.log("[CardPage] Fetching volume data for address:", address);
@@ -87,7 +178,89 @@ export default function CardPage({
 
       fetchVolume();
     }
-  }, [cardId, address, volumeData]);
+  }, [cardId, address, volumeData, dataLoaded]);
+
+  // Fetch NFT + token data when showing NFT/token cards (only if not cached)
+  useEffect(() => {
+    const needsWrapped =
+      cardId === "nft" ||
+      cardId === "rarest-nft" ||
+      cardId === "top-tokens" ||
+      cardId === "token-held-longest";
+
+    if (
+      needsWrapped &&
+      address &&
+      (!nftData || !tokensData || !longestTokenData) &&
+      !dataLoaded
+    ) {
+      const fetchNFT = async () => {
+        try {
+          console.log("[CardPage] Fetching NFT data for address:", address);
+          const response = await fetch(
+            `/api/wrapped?address=${encodeURIComponent(address)}`
+          );
+          const result = await response.json();
+
+          if (result.metrics) {
+            console.log("[CardPage] NFT data received:", result.metrics);
+            const nftStats = {
+              totalNFTs: result.metrics.nftCount || 0,
+              topNFTs: result.metrics.topNFTs || [],
+            };
+            console.log("[CardPage] Transformed NFT Props:", nftStats);
+            setNftData(nftStats);
+
+            const tokenList = (result.metrics.topTokensHeldLongest || []).map(
+              (t: any) => ({
+                name: t.name,
+                daysHeld: t.daysHeld,
+                sinceDate: t.sinceDate,
+              })
+            );
+            setTokensData({ tokens: tokenList });
+
+            if (tokenList[0]) {
+              setLongestTokenData({
+                token: tokenList[0].name,
+                sinceDate: tokenList[0].sinceDate,
+                daysHeld: tokenList[0].daysHeld,
+              });
+            } else {
+              setLongestTokenData(null);
+            }
+
+            // Extract badge data
+            if (result.badge) {
+              setBadgeData({
+                badgeTitle: result.badge.title || "The HODL Hero",
+                badgeDescription:
+                  result.badge.description ||
+                  "You earned this title by holding longer than 5% of Holders on Stacks this year",
+                badgeIconSrc: "/HodlHeroBadge.svg", // Default icon
+              });
+            }
+
+            // Extract final badge summary data
+            setFinalBadgeData({
+              badgeTitle: result.badge?.title || "The HODL Hero",
+              badgeIconSrc: "/HodlHeroBadge.svg",
+              volume: result.metrics?.volumeUSD || 0,
+              nftCount: result.metrics?.nftCount || 0,
+              topToken: result.metrics?.topToken || "STX",
+              tokenHeldDays: result.metrics?.longestHoldDays || 0,
+              topProtocol: "BITFLOW", // Placeholder since not in API
+              largestTransaction: 5000, // Placeholder since not in API
+            });
+          }
+        } catch (err) {
+          console.error("[CardPage] Error fetching NFT data:", err);
+        }
+      };
+
+      fetchNFT();
+    }
+  }, [cardId, address, nftData, dataLoaded]);
 
   if (isLoading || !cardId) {
     return (
@@ -146,18 +319,37 @@ export default function CardPage({
         />
       );
     case "nft":
-      return <NFTCard navigationProps={navigationProps} progress={progress} />;
+      return (
+        <NFTCard
+          address={address || undefined}
+          data={nftData || undefined}
+          navigationProps={navigationProps}
+          progress={progress}
+        />
+      );
     case "rarest-nft":
       return (
-        <RarestNFTCard navigationProps={navigationProps} progress={progress} />
+        <RarestNFTCard
+          address={address || undefined}
+          data={nftData || undefined}
+          navigationProps={navigationProps}
+          progress={progress}
+        />
       );
     case "top-tokens":
       return (
-        <TopTokensCard navigationProps={navigationProps} progress={progress} />
+        <TopTokensCard
+          address={address || undefined}
+          data={tokensData || undefined}
+          navigationProps={navigationProps}
+          progress={progress}
+        />
       );
     case "token-held-longest":
       return (
         <TokenHeldLongestCard
+          address={address || undefined}
+          data={longestTokenData || undefined}
           navigationProps={navigationProps}
           progress={progress}
         />
@@ -165,6 +357,7 @@ export default function CardPage({
     case "top-protocols":
       return (
         <TopProtocolsCard
+          address={address || undefined}
           navigationProps={navigationProps}
           progress={progress}
         />
@@ -172,6 +365,7 @@ export default function CardPage({
     case "top-protocol":
       return (
         <TopProtocolCard
+          address={address || undefined}
           navigationProps={navigationProps}
           progress={progress}
         />
@@ -179,15 +373,27 @@ export default function CardPage({
     case "largest-transaction":
       return (
         <LargestTransactionCard
+          address={address || undefined}
           navigationProps={navigationProps}
           progress={progress}
         />
       );
     case "title-badge":
-      return <BadgeCard navigationProps={navigationProps} />;
+      return (
+        <BadgeCard
+          address={address || undefined}
+          data={badgeData || undefined}
+          navigationProps={navigationProps}
+        />
+      );
     case "badge":
       return (
-        <FinalBadgeCard navigationProps={navigationProps} progress={progress} />
+        <FinalBadgeCard
+          address={address || undefined}
+          data={finalBadgeData || undefined}
+          navigationProps={navigationProps}
+          progress={progress}
+        />
       );
     default:
       return (

@@ -105,6 +105,55 @@ export class StacksDataService {
   }
 
   /**
+   * Fetch all NFT holdings with pagination.
+   */
+  async fetchFullNftHoldings(address: string): Promise<{ allNfts: any[]; total: number }> {
+    const allNfts: any[] = [];
+    let offset = 0;
+    const limit = 50;
+    let total = Infinity;
+
+    while (offset < total) {
+      try {
+        const { data, error } = await this.client.GET('/extended/v2/addresses/{address}/nft-events' as any, {
+          params: {
+            path: { address },
+            query: { limit, offset }
+          }
+        });
+
+        if (error) {
+          console.error('fetchFullNftHoldings error', error);
+          break;
+        }
+
+        const results = (data as any)?.results || [];
+        const pageTotal = (data as any)?.total;
+
+        if (Number.isFinite(pageTotal)) {
+          total = Number(pageTotal);
+        }
+
+        if (!results.length) {
+          break;
+        }
+
+        allNfts.push(...results);
+        offset += results.length;
+
+        if (results.length < limit) {
+          break;
+        }
+      } catch (err) {
+        console.error('fetchFullNftHoldings error', err);
+        break;
+      }
+    }
+
+    return { allNfts, total: Number.isFinite(total) ? Number(total) : allNfts.length };
+  }
+
+  /**
    * Calculate the largest native STX transfer from a list of transactions.
    * Returns amount in STX (not micro-STX) and the transaction id.
    */

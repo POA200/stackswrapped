@@ -5,8 +5,9 @@ import { Gem } from "lucide-react";
 import Image from "next/image";
 
 interface TopTokensCardProps {
+  address?: string;
   data?: {
-    tokens: Array<{ name: string; duration: string }>;
+    tokens: Array<{ name: string; daysHeld: number; sinceDate?: string }>;
   };
   navigationProps?: {
     showPrev?: boolean;
@@ -19,23 +20,42 @@ interface TopTokensCardProps {
 }
 
 export function TopTokensCard({
+  address,
   data,
   navigationProps,
   progress,
 }: TopTokensCardProps) {
-  const tokenData = data || {
-    tokens: [
-      { name: "STX", duration: "712 days" },
-      { name: "LEO", duration: "645 days" },
-      { name: "Welsh", duration: "603 days" },
-      { name: "sBTC", duration: "489 days" },
-      { name: "Not", duration: "455 days" },
-    ],
-  };
+  if (!data) {
+    return (
+      <CardFrame
+        title="Diamond Hands"
+        address={address}
+        showPrev={navigationProps?.showPrev}
+        showNext={navigationProps?.showNext}
+        onPrev={navigationProps?.onPrev}
+        onNext={navigationProps?.onNext}
+        onDisconnect={navigationProps?.onDisconnect}
+        currentStep={progress?.current}
+        totalSteps={progress?.total}
+      >
+        <div className="w-full h-full flex items-center justify-center px-4 py-6">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p className="text-sm text-muted-foreground text-center">
+              Loading longest-held tokens...
+            </p>
+          </div>
+        </div>
+      </CardFrame>
+    );
+  }
+
+  const tokens = data.tokens || [];
 
   return (
     <CardFrame
       title="Diamond Hands"
+      address={address}
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}
@@ -77,29 +97,40 @@ export function TopTokensCard({
         </div>
 
         {/* List */}
-        <div className="w-full max-w-md space-y-3 z-10">
-          {tokenData.tokens.slice(0, 5).map((token, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-4 p-3 rounded-lg bg-primary/5 border border-primary/20"
-            >
-              <div className="w-6 text-lg font-semibold text-orange-500 text-right">
-                {index + 1}
+        {tokens.length > 0 ? (
+          <div className="w-full max-w-md space-y-3 z-10">
+            {tokens.slice(0, 5).map((token, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-4 p-3 rounded-lg bg-primary/5 border border-primary/20"
+              >
+                <div className="w-6 text-lg font-semibold text-orange-500 text-right">
+                  {index + 1}
+                </div>
+                <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/10">
+                  <Gem className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-lg font-semibold text-primary leading-snug">
+                    {token.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Held for {token.daysHeld ?? 0} days
+                    {token.sinceDate
+                      ? ` (since ${new Date(
+                          token.sinceDate
+                        ).toLocaleDateString()})`
+                      : ""}
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/10">
-                <Gem className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-lg font-semibold text-primary leading-snug">
-                  {token.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Held for {token.duration}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="w-full max-w-md text-center py-8 z-10">
+            <p className="text-muted-foreground">No token hold data found.</p>
+          </div>
+        )}
       </div>
     </CardFrame>
   );

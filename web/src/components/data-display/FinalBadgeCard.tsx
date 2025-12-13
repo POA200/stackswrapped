@@ -14,6 +14,7 @@ import {
 import Image from "next/image";
 
 interface FinalBadgeCardProps {
+  address?: string;
   data?: {
     badgeTitle?: string;
     badgeIconSrc?: string; // dynamic icon per user
@@ -35,6 +36,7 @@ interface FinalBadgeCardProps {
 }
 
 export function FinalBadgeCard({
+  address,
   data,
   navigationProps,
   progress,
@@ -55,6 +57,7 @@ export function FinalBadgeCard({
     <CardFrame
       title="Your 2025 Wrapped Summary"
       badgeTitle={summaryData.badgeTitle}
+      address={address}
       isDemo={!data}
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}

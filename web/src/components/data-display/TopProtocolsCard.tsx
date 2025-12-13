@@ -5,6 +5,7 @@ import { Network } from "lucide-react";
 import Image from "next/image";
 
 interface TopProtocolsCardProps {
+  address?: string;
   data?: {
     protocols: Array<{ name: string; interactions: number }>;
   };
@@ -19,6 +20,7 @@ interface TopProtocolsCardProps {
 }
 
 export function TopProtocolsCard({
+  address,
   data,
   navigationProps,
   progress,
@@ -36,6 +38,7 @@ export function TopProtocolsCard({
   return (
     <CardFrame
       title="Top 5 Protocols"
+      address={address}
       showPrev={navigationProps?.showPrev}
       showNext={navigationProps?.showNext}
       onPrev={navigationProps?.onPrev}

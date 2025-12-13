@@ -19,6 +19,18 @@ export function StacksConnectButton({ children, ...props }: ButtonProps) {
   const [connectError, setConnectError] = useState<string | null>(null);
   const router = useRouter();
 
+  // Check if user is already connected on mount
+  React.useEffect(() => {
+    if (userSession.isUserSignedIn()) {
+      const userData = userSession.loadUserData();
+      const stxAddress = userData?.profile?.stxAddress?.mainnet;
+      if (stxAddress) {
+        setIsConnected(true);
+        setAddress(stxAddress);
+      }
+    }
+  }, []);
+
   // Temporarily disabled to avoid 403s from BNS lookup.
   // const getBns = async (stxAddress: string) => {
   //   try {
@@ -66,9 +78,9 @@ export function StacksConnectButton({ children, ...props }: ButtonProps) {
             setBns("");
             setConnectError(null);
 
-            // Navigate to the first wrapped card page with the user's address
+            // Navigate to the loading page to fetch and cache all data
             router.push(
-              `/wrap/volume?address=${encodeURIComponent(stxAddress)}`
+              `/wrap/loading?address=${encodeURIComponent(stxAddress)}`
             );
           } catch (err) {
             console.error("Error in onFinish handler:", err);
@@ -103,8 +115,12 @@ export function StacksConnectButton({ children, ...props }: ButtonProps) {
         </>
       );
     }
-    const displayName = bns || `${address.slice(0, 4)}...${address.slice(-4)}`;
-    return `View wrap ${displayName}`;
+    return (
+      <>
+        <Wallet className="w-5 h-5" />
+        View Wrap
+      </>
+    );
   };
 
   return (

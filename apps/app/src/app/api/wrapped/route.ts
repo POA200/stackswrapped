@@ -16,8 +16,28 @@ export async function GET(request: NextRequest) {
     // Fetch raw data
     const max = 5000;
     const transactions = await service.fetchAllTransactions(address, max);
-    const nftHoldings = await service.fetchNftHoldings(address);
+    const { allNfts: nftHoldings, total: nftTotal } = await service.fetchFullNftHoldings(address);
     const ftBalances = await service.fetchFungibleTokenBalances(address);
+
+    // Calculate top 5 rarest NFTs
+    const topNFTs = nftHoldings
+      .map((nft: any) => {
+        const assetId = nft.asset_identifier || nft.asset?.asset_id || '';
+        const parts = assetId.split('::');
+        const collectionName = parts[1] || parts[0] || 'Unknown';
+        const tokenId = nft.value?.repr || nft.token_id || '';
+        const name = `${collectionName} #${tokenId}`;
+        const supply = nft.count || 10000;
+        const rarity = Math.max(1, Math.min(99, 100 - Math.floor((supply / 10000) * 100)));
+        
+        return {
+          name,
+          collection: collectionName,
+          rarity
+        };
+      })
+      .sort((a: any, b: any) => b.rarity - a.rarity)
+      .slice(0, 5);
 
     // Basic placeholder analytics
     const totalTransactions = transactions.length;
@@ -39,7 +59,8 @@ export async function GET(request: NextRequest) {
         busiestMonth,
         longestHoldDays,
         volumeUSD,
-        nftCount: nftHoldings?.length || 0,
+        nftCount: nftTotal,
+        topNFTs,
         topToken: ftBalances?.[0]?.asset?.symbol || 'STX',
       },
       badge: {
@@ -47,7 +68,7 @@ export async function GET(request: NextRequest) {
       },
       raw: {
         transactionsCount: transactions.length,
-        nftHoldingsCount: nftHoldings.length,
+        nftHoldingsCount: nftTotal,
         ftBalancesCount: ftBalances.length,
       },
     };

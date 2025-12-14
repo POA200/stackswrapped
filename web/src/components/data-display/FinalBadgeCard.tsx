@@ -42,11 +42,8 @@ export function FinalBadgeCard({
   progress,
 }: FinalBadgeCardProps) {
   // Default data for placeholder/demo
-  // Override topToken and largestTransaction with correct values if present
   const summaryData = {
     ...(data || {}),
-    topToken: "STX",
-    largestTransaction: 153,
   };
 
   return (
@@ -121,7 +118,9 @@ export function FinalBadgeCard({
               <p className="text-[10px] font-semibold text-foreground">
                 Top Token
               </p>
-              <p className="text-xs text-muted-foreground">STX</p>
+              <p className="text-xs text-muted-foreground">
+                {summaryData.topToken || "STX"}
+              </p>
             </div>
 
             {/* Days Holding (HODL Days divided by 2) */}
@@ -152,7 +151,11 @@ export function FinalBadgeCard({
             <div className="p-3 bg-background/50 rounded border border-primary/10 text-center space-y-2">
               <DollarSign className="w-5 h-5 text-primary mx-auto" />
               <p className="text-[10px] font-semibold text-foreground">Whale</p>
-              <p className="text-xs text-muted-foreground">153 STX</p>
+              <p className="text-xs text-muted-foreground">
+                {typeof summaryData.largestTransaction === "number"
+                  ? `$${summaryData.largestTransaction}`
+                  : "0 STX"}
+              </p>
             </div>
           </div>
         </Card>

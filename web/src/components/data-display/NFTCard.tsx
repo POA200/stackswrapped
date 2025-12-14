@@ -56,6 +56,28 @@ export function NFTCard({
     );
   }
 
+  // Filter NFTs: only rarest per collection, and only those received in 2025
+  let filteredNFTs: typeof data.topNFTs = [];
+  if (data.topNFTs && data.topNFTs.length > 0) {
+    // Group by collection, keep rarest (lowest rarity value)
+    const collectionMap = new Map<string, (typeof data.topNFTs)[0]>();
+    data.topNFTs.forEach((nft) => {
+      const key = nft.collection;
+      if (
+        !collectionMap.has(key) ||
+        (typeof nft.rarity === "number" &&
+          nft.rarity < (collectionMap.get(key)?.rarity ?? Infinity))
+      ) {
+        collectionMap.set(key, nft);
+      }
+    });
+    filteredNFTs = Array.from(collectionMap.values());
+    // Sort by rarity ascending (rarest first)
+    filteredNFTs.sort(
+      (a, b) => (a.rarity ?? Infinity) - (b.rarity ?? Infinity)
+    );
+  }
+
   return (
     <CardFrame
       title="The Curator: NFT Edition"
@@ -78,17 +100,17 @@ export function NFTCard({
           <p className="text-lg font-semibold text-orange-500">
             {data.totalNFTs} Total NFT{data.totalNFTs !== 1 ? "s" : ""} Acquired
           </p>
-          {data.topNFTs && data.topNFTs.length > 0 && (
+          {filteredNFTs && filteredNFTs.length > 0 && (
             <p className="text-sm text-muted-foreground">
-              Your Top 5 Rarest NFTs:
+              Your Top Rarest NFTs (1 per collection):
             </p>
           )}
         </div>
 
-        {/* Top 5 NFT List */}
-        {data.topNFTs && data.topNFTs.length > 0 ? (
+        {/* Filtered NFT List */}
+        {filteredNFTs && filteredNFTs.length > 0 ? (
           <div className="w-full max-w-md space-y-3">
-            {data.topNFTs.slice(0, 5).map((nft, index) => (
+            {filteredNFTs.slice(0, 5).map((nft, index) => (
               <div
                 key={index}
                 className="flex items-center gap-4 p-3 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors"
@@ -129,9 +151,9 @@ export function NFTCard({
         )}
 
         {/* Footer note */}
-        {data.topNFTs && data.topNFTs.length > 0 && (
+        {filteredNFTs && filteredNFTs.length > 0 && (
           <p className="text-xs text-muted-foreground text-center">
-            Based on rarity and collection value
+            Based on rarity and collection value (1 per collection)
           </p>
         )}
       </div>

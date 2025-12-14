@@ -1,7 +1,6 @@
 "use client";
 
 import { CardFrame } from "@/components/data-display/CardFrame";
-import { DollarSign } from "lucide-react";
 import Image from "next/image";
 
 interface LargestTransactionCardProps {
@@ -29,8 +28,9 @@ export function LargestTransactionCard({
     amount: 1000,
   };
 
-  // Format the amount with commas
-  const formattedAmount = (card.amount || 0).toLocaleString("en-US");
+  // Format the amount with commas (ensure non-negative integer)
+  const amount = Math.max(0, Math.floor(card.amount || 0));
+  const formattedAmount = amount.toLocaleString("en-US");
 
   return (
     <CardFrame
@@ -45,27 +45,27 @@ export function LargestTransactionCard({
       totalSteps={progress?.total}
     >
       <div className="relative w-full h-full flex flex-col items-center justify-center px-4 py-6 space-y-6 overflow-hidden">
-        {/* Background Stickers */}
+        {/* Background Sticker */}
         <Image
-          src="/TopRightLargestSingleTXSticker.svg"
+          src="/LargestTxSticker.svg"
           alt=""
           width={200}
           height={200}
-          className="absolute top-0 left-0 w-64 h-auto -z-10 pointer-events-none opacity-50"
-        />
-        <Image
-          src="/BottomLargestSingkeTXSticker.svg"
-          alt=""
-          width={300}
-          height={200}
-          className="absolute bottom-0 left-0 w-full h-auto -z-10 pointer-events-none opacity-40"
+          className="absolute w-auto h-auto -z-10 pointer-events-none opacity-50"
         />
 
         {/* Main Content Container */}
         <div className="flex flex-col items-center justify-center space-y-8 z-10">
-          {/* Dollar Sign Icon */}
+          {/* STX Logo Icon */}
           <div className="flex items-center justify-center w-24 h-24">
-            <DollarSign className="w-24 h-24 text-primary" strokeWidth={2} />
+            <Image
+              src="/Stacks-logo.svg"
+              alt="STX"
+              width={96}
+              height={96}
+              className="w-24 h-24"
+              priority={false}
+            />
           </div>
 
           {/* Heading */}

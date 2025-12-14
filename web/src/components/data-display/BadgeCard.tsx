@@ -26,12 +26,33 @@ export function BadgeCard({
   navigationProps,
   progress,
 }: BadgeCardProps) {
-  const card = data || {
-    badgeTitle: "The HODL Hero",
-    badgeDescription:
-      "You earned this title by holding longer than 5% of Holders on Stacks this year",
-    badgeIconSrc: "/HodlHeroBadge.svg",
-  };
+  // Show loading state until data is provided
+  if (!data) {
+    return (
+      <CardFrame
+        title="Your 2025 Badge"
+        address={address}
+        showPrev={navigationProps?.showPrev}
+        showNext={navigationProps?.showNext}
+        onPrev={navigationProps?.onPrev}
+        onNext={navigationProps?.onNext}
+        onDisconnect={navigationProps?.onDisconnect}
+        currentStep={progress?.current}
+        totalSteps={progress?.total}
+      >
+        <div className="w-full h-full flex items-center justify-center px-4 py-6">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p className="text-sm text-muted-foreground text-center">
+              Computing your Stacks title...
+            </p>
+          </div>
+        </div>
+      </CardFrame>
+    );
+  }
+
+  const card = data!;
 
   return (
     <CardFrame
@@ -79,14 +100,15 @@ export function BadgeCard({
           {/* Badge Title */}
           <div className="text-center">
             <h3 className="text-4xl md:text-5xl font-bold text-orange-500">
-              {card.badgeTitle}
+              {card.badgeTitle || "Your Stacks Title"}
             </h3>
           </div>
 
           {/* Badge Description */}
           <div className="text-center max-w-md px-4">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              {card.badgeDescription}
+              {card.badgeDescription ||
+                "Your personalized title celebrates your on-chain year on Stacks."}
             </p>
           </div>
         </div>

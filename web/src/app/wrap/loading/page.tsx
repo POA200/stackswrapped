@@ -60,14 +60,34 @@ function LoadingContent() {
           return;
         }
 
-        // Create fetch with timeout (2 minutes)
-        const fetchWithTimeout = (url: string, timeout = 120000) => {
-          return Promise.race([
-            fetch(url),
-            new Promise<Response>((_, reject) =>
-              setTimeout(() => reject(new Error("Request timeout")), timeout)
-            ),
-          ]);
+        // Create fetch with timeout and retries
+        const fetchWithTimeout = async (
+          url: string,
+          timeout = 15000,
+          retries = 2
+        ): Promise<Response> => {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), timeout);
+          try {
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(timer);
+            return res;
+          } catch (err: any) {
+            clearTimeout(timer);
+            // Suppress AbortError from console, handle it gracefully
+            if (err.name === "AbortError") {
+              if (retries > 0) {
+                await new Promise((r) => setTimeout(r, 800));
+                return fetchWithTimeout(url, timeout, retries - 1);
+              }
+              throw new Error(`Request timeout after ${timeout}ms`);
+            }
+            if (retries > 0) {
+              await new Promise((r) => setTimeout(r, 800));
+              return fetchWithTimeout(url, timeout, retries - 1);
+            }
+            throw err;
+          }
         };
 
         // Fetch both volume and wrapped data concurrently with timeout
@@ -92,7 +112,7 @@ function LoadingContent() {
             "[Loading] Volume request failed:",
             volumeResponse.reason
           );
-        } else {
+        } else if (volumeResponse.status === "fulfilled") {
           console.error(
             "[Loading] Volume API error:",
             volumeResponse.value.status
@@ -132,6 +152,9 @@ function LoadingContent() {
             console.log("[Loading] Data cached");
           }
           setDataFetched(true);
+          if (!volumeResult?.data) {
+            setFetchError("Some data providers timed out. Continuing...");
+          }
         }
       } catch (error) {
         console.error("[Loading] Error fetching data:", error);

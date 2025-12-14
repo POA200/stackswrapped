@@ -1,7 +1,7 @@
 "use client";
 
 import { CardFrame } from "@/components/data-display/CardFrame";
-import { Gem } from "lucide-react";
+import { CircleDot, Gem } from "lucide-react";
 import Image from "next/image";
 
 interface TopTokensCardProps {
@@ -123,7 +123,7 @@ export function TopTokensCard({
                       unoptimized
                     />
                   ) : (
-                    <Gem className="w-4 h-4 text-primary" />
+                    <CircleDot className="w-4 h-4 text-primary" />
                   )}
                 </div>
                 <div className="flex-1">

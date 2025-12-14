@@ -27,6 +27,7 @@ export function Hero() {
           alt=""
           width={84}
           height={84}
+          priority={false}
           className="absolute top-[15%] left-[5%] sm:top-40 sm:left-40 w-16 md:w-48 h-auto animate-float"
           style={{ animationDelay: "0s" }}
         />
@@ -35,6 +36,7 @@ export function Hero() {
           alt=""
           width={84}
           height={84}
+          priority={false}
           className="absolute bottom-[20%] left-[10%] sm:bottom-60 sm:left-50 w-16 sm:w-20 h-16 sm:h-20 animate-float"
           style={{ animationDelay: "0.3s" }}
         />
@@ -43,6 +45,7 @@ export function Hero() {
           alt=""
           width={64}
           height={64}
+          priority={false}
           className="absolute top-[20%] right-[5%] sm:top-40 sm:right-[25%] w-14 sm:w-16 h-14 sm:h-16 animate-float"
           style={{ animationDelay: "0.6s" }}
         />
@@ -51,7 +54,7 @@ export function Hero() {
           alt=""
           width={64}
           height={64}
-          loading="eager"
+          priority={false}
           className="absolute top-1/4 right-0 w-28 sm:w-54 h-auto animate-float"
           style={{ animationDelay: "0.9s" }}
         />
@@ -60,7 +63,7 @@ export function Hero() {
           alt=""
           width={84}
           height={84}
-          loading="eager"
+          priority={false}
           className="absolute bottom-1/4 right-1/4 w-14 sm:w-38 h-auto animate-float"
           style={{ animationDelay: "1.2s" }}
         />

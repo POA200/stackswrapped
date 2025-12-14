@@ -25,15 +25,32 @@ export function TopProtocolsCard({
   navigationProps,
   progress,
 }: TopProtocolsCardProps) {
-  const protocolData = data || {
-    protocols: [
-      { name: "Bitflow", interactions: 245 },
-      { name: "Velar", interactions: 189 },
-      { name: "StackingDAO", interactions: 156 },
-      { name: "Arkadiko", interactions: 98 },
-      { name: "STX.City", interactions: 67 },
-    ],
-  };
+  if (!data) {
+    return (
+      <CardFrame
+        title="Top 5 Protocols"
+        address={address}
+        showPrev={navigationProps?.showPrev}
+        showNext={navigationProps?.showNext}
+        onPrev={navigationProps?.onPrev}
+        onNext={navigationProps?.onNext}
+        onDisconnect={navigationProps?.onDisconnect}
+        currentStep={progress?.current}
+        totalSteps={progress?.total}
+      >
+        <div className="w-full h-full flex items-center justify-center px-4 py-6">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p className="text-sm text-muted-foreground text-center">
+              Loading your top protocols...
+            </p>
+          </div>
+        </div>
+      </CardFrame>
+    );
+  }
+
+  const protocols = data.protocols || [];
 
   return (
     <CardFrame
@@ -73,29 +90,32 @@ export function TopProtocolsCard({
         </div>
 
         {/* List */}
-        <div className="w-full max-w-md space-y-3 z-10">
-          {protocolData.protocols.slice(0, 5).map((protocol, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-4 p-3 rounded-lg bg-primary/5 border border-primary/20"
-            >
-              <div className="w-6 text-lg font-semibold text-orange-500 text-right">
-                {index + 1}
+        {protocols.length > 0 ? (
+          <div className="w-full max-w-md space-y-3 z-10">
+            {protocols.slice(0, 5).map((protocol, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-4 p-3 rounded-lg bg-primary/5 border border-primary/20"
+              >
+                <div className="w-6 text-lg font-semibold text-orange-500 text-right">
+                  {index + 1}
+                </div>
+                <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/10">
+                  <Network className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-lg font-semibold text-primary leading-snug">
+                    {protocol.name}
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/10">
-                <Network className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-lg font-semibold text-primary leading-snug">
-                  {protocol.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {protocol.interactions} interactions
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="w-full max-w-md text-center py-8 z-10">
+            <p className="text-muted-foreground">No protocol data found.</p>
+          </div>
+        )}
       </div>
     </CardFrame>
   );

@@ -105,36 +105,36 @@ export function TokenHeldLongestCard({
           className="absolute bottom-0 w-full h-auto -z-10 pointer-events-none opacity-20"
         />
 
-        {/* Heading */}
-        <div className="text-center space-y-2 z-10">
-          <p className="text-sm text-primary font-regular">
-            The token you held the longest is
-          </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-primary">
-            {card.token}
-          </h2>
-        </div>
-
         {/* Subheading */}
         <div className="text-center space-y-1 z-10">
           <h3 className="text-2xl font-regular text-orange-500">
             Diamond Hands Approved!
           </h3>
-          <p className="text-sm text-foreground">
-            You've held it since {card.sinceDate}
-          </p>
         </div>
 
-        {/* Days Held */}
-        <div className="flex flex-col items-center justify-center space-y-2 z-10">
-          <div className="text-5xl md:text-4xl font-regular text-primary">
-            {card.daysHeld} Days
-          </div>
+        {/* Heading */}
+        <div className="text-center space-y-2 z-10">
+          <p className="text-sm text-primary/50 font-regular">
+            The token you held the longest is
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-primary">
+            ${card.token}
+          </h2>
         </div>
 
         {/* Token Logo Placeholder */}
         <div className="flex items-center justify-center w-24 h-24 rounded-full border-2 border-primary/30 bg-primary/10 text-[11px] text-primary z-10 bottom-4">
           <CircleDot className="w-10 h-10 text-primary" />
+        </div>
+
+        {/* Days Held */}
+        <div className="flex flex-col items-center justify-center space-y-2 z-10">
+          <div className="text-5xl md:text-4xl font-regular text-primary">
+            {typeof card.daysHeld === "number"
+              ? Math.floor(card.daysHeld / 2)
+              : 0}{" "}
+            Days
+          </div>
         </div>
       </div>
     </CardFrame>

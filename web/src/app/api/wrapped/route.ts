@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { StacksDataService } from '@/lib/data-service/StacksDataService';
 import { classifyUser } from '@/lib/data-service/UserClassifier';
+import { classifyTitle } from '@/lib/data-service/title-classifier';
 
 export async function GET(request: NextRequest) {
   try {
@@ -82,6 +83,8 @@ export async function GET(request: NextRequest) {
     const blockDateByHeight = new Map<number, Date>();
     const tokenFirstSeen = new Map<string, Date>();
     const tokenSeenIn2025 = new Map<string, Date>();
+    const protocolInteractions = new Map<string, number>();
+    let largestStxTransferMicro = 0; // track largest single STX transfer in 2025 (microstacks)
     let earliestTxDate: Date | null = null;
 
     const nameFromAssetId = (assetId: string) => {
@@ -180,11 +183,26 @@ export async function GET(request: NextRequest) {
             if (!existing || txDate < existing) {
               tokenSeenIn2025.set(symbol, txDate);
             }
+            // STX token_transfer represents native STX moves; capture largest amount in 2025
+            const amt = Number(tx.token_transfer?.amount || 0);
+            if (!Number.isNaN(amt) && amt > largestStxTransferMicro) {
+              largestStxTransferMicro = amt;
+            }
           }
         }
       }
+      // Count protocol interactions from contract calls (2025 only)
+      try {
+        if (tx.tx_type === 'contract_call' && tx.contract_call?.contract_id && txDate) {
+          // Only count interactions from 2025
+          if (txDate >= year2025Start && txDate < year2025End) {
+            const cid = tx.contract_call.contract_id as string;
+            const current = protocolInteractions.get(cid) || 0;
+            protocolInteractions.set(cid, current + 1);
+          }
+        }
+      } catch {}
     });
-
     // Token transfers endpoint (fungible) — improve coverage
     tokenTransfers.forEach((tt: any) => {
       const assetId = tt.asset_identifier;
@@ -489,9 +507,109 @@ export async function GET(request: NextRequest) {
 
     const badgeTitle = classifyUser(transactions as any, longestHoldDays);
 
+    // Aggregate contract interactions and NFT collections for title classifier
+    const totalContractInteractions = Array.from(protocolInteractions.values()).reduce((a, b) => a + b, 0);
+    const nftCollectionIds = new Set<string>();
+    (nftHoldings || []).forEach((nft: any) => {
+      const aid = nft?.asset_identifier || nft?.value?.asset_identifier || nft?.asset?.asset_id || '';
+      if (typeof aid === 'string' && aid.length > 0) {
+        // Use contract portion before '::' as a collection id
+        const cid = aid.includes('::') ? aid.split('::')[0] : aid;
+        nftCollectionIds.add(cid);
+      }
+    });
+    const totalCollectionsOwned = nftCollectionIds.size;
+
+    const top5Holdings = (topTokensHeldLongest || []).map(t => ({ daysHeld: t.daysHeld }));
+
+    const title = classifyTitle({
+      totalTransactions,
+      totalContractInteractions,
+      totalCollectionsOwned,
+      top5Holdings,
+    });
+
     const volumeUSD = transactions
       .filter((tx: any) => tx.tx_type === 'token_transfer')
       .reduce((sum: number, tx: any) => sum + (tx.token_transfer?.amount ? Number(tx.token_transfer.amount) : 0), 0);
+
+    const protocolNameMap: Record<string, string> = {
+      // Common protocol contract names → display names
+      'token-alex': 'ALEX',
+      'alex': 'ALEX',
+      'arkadiko': 'ARKADIKO',
+      'bitflow': 'BITFLOW',
+      'charisma': 'CHARISMA',
+      'gosats': 'GOSATS',
+      'granite': 'GRANITE',
+      'hermetica': 'HERMETICA',
+      'light-finance': 'LIGHT FINANCE',
+      'stxcity': 'STX.CITY',
+      'stx-city': 'STX.CITY',
+      'sefo-finance': 'SEFO FINANCE',
+      'stackscanner': 'STACKSCANNER',
+      'velar': 'VELAR',
+      'zest-protocol': 'ZEST PROTOCOL',
+      'zest': 'ZEST PROTOCOL',
+    };
+
+    const toProtocolName = (contractId: string) => {
+      const parts = contractId.split('.');
+      const contractName = parts[1] || contractId;
+      const key = contractName.toLowerCase();
+      
+      // Direct match
+      if (protocolNameMap[key]) {
+        return protocolNameMap[key];
+      }
+      
+      // Partial match - check if any protocol name is contained in the contract name
+      for (const [mapKey, mapValue] of Object.entries(protocolNameMap)) {
+        if (key.includes(mapKey) || mapKey.includes(key)) {
+          return mapValue;
+        }
+      }
+      
+      return contractName;
+    };
+
+    // Define allowlist of approved DeFi protocols
+    const allowlist = new Set([
+      'ALEX',
+      'ARKADIKO',
+      'BITFLOW',
+      'CHARISMA',
+      'GOSATS',
+      'GRANITE',
+      'HERMETICA',
+      'LIGHT FINANCE',
+      'STX.CITY',
+      'SEFO FINANCE',
+      'STACKSCANNER',
+      'VELAR',
+      'ZEST PROTOCOL',
+    ]);
+
+    const normalizeName = (name: string) => name.replace(/[-_]/g, ' ').toUpperCase();
+
+    // Group by protocol name and sum interactions from different contracts
+    const protocolMap = new Map<string, number>();
+    
+    Array.from(protocolInteractions.entries()).forEach(([cid, count]) => {
+      const name = normalizeName(toProtocolName(cid));
+      if (allowlist.has(name)) {
+        const current = protocolMap.get(name) || 0;
+        protocolMap.set(name, current + count);
+      }
+    });
+
+    const topProtocols = Array.from(protocolMap.entries())
+      .map(([name, interactions]) => ({ name, interactions }))
+      .sort((a, b) => b.interactions - a.interactions)
+      .slice(0, 5);
+
+    console.log('[/api/wrapped] Protocol interactions before filter:', Array.from(protocolInteractions.entries()).slice(0, 10));
+    console.log('[/api/wrapped] Top protocols after allowlist:', topProtocols);
 
     const response = {
       address,
@@ -501,19 +619,28 @@ export async function GET(request: NextRequest) {
         busiestMonth,
         longestHoldDays,
         volumeUSD,
+        largestStxTransfer: Math.floor(largestStxTransferMicro / 1_000_000),
         nftCount: nft2025.length,
         topNFTs,
         topToken: ftBalances?.[0]?.asset?.symbol || 'STX',
         topTokensHeldLongest,
         longestTokenHold,
+        topProtocols,
       },
       badge: {
-        title: badgeTitle,
+        title: title.title,
+        description: title.description,
+        badgeSvg: title.badgeSvg,
+        legacy: badgeTitle, // keep for debugging/compat
       },
       raw: {
         transactionsCount: transactions.length,
         nftHoldingsCount: nft2025.length,
         ftBalancesCount: ftBalances.length,
+        transactions: transactions.slice(0, 20).map((t: any) => ({
+          tx_type: t.tx_type,
+          contract_call: t.contract_call,
+        })),
       },
     };
 

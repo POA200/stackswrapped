@@ -7,8 +7,8 @@ import Image from "next/image";
 interface TopProtocolCardProps {
   address?: string;
   data?: {
-    protocolName?: string;
-    contractCalls?: number;
+    name: string;
+    interactions: number;
   };
   navigationProps?: {
     showPrev?: boolean;
@@ -26,10 +26,30 @@ export function TopProtocolCard({
   navigationProps,
   progress,
 }: TopProtocolCardProps) {
-  const card = data || {
-    protocolName: "Bitflow",
-    contractCalls: 245,
-  };
+  if (!data) {
+    return (
+      <CardFrame
+        title="DeFi Home Base"
+        address={address}
+        showPrev={navigationProps?.showPrev}
+        showNext={navigationProps?.showNext}
+        onPrev={navigationProps?.onPrev}
+        onNext={navigationProps?.onNext}
+        onDisconnect={navigationProps?.onDisconnect}
+        currentStep={progress?.current}
+        totalSteps={progress?.total}
+      >
+        <div className="w-full h-full flex items-center justify-center px-4 py-6">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p className="text-sm text-muted-foreground text-center">
+              Loading your top protocol...
+            </p>
+          </div>
+        </div>
+      </CardFrame>
+    );
+  }
 
   return (
     <CardFrame
@@ -68,24 +88,15 @@ export function TopProtocolCard({
           {/* Protocol Name */}
           <div className="text-center">
             <h3 className="text-4xl md:text-5xl font-bold text-primary">
-              {card.protocolName}
+              {data.name}
             </h3>
           </div>
 
-          {/* Protocol Logo Placeholder */}
-          <div className="flex items-center justify-center w-32 h-32 rounded-full border-2 border-primary/30 bg-primary/10 text-primary/60 z-10 mt-6">
-            <div className="flex flex-col items-center justify-center">
-              <CircleDot className="w-12 h-12 text-primary" />
-            </div>
-          </div>
-
           {/* Contract Calls */}
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              total contract calls.
-            </p>
+          <div className="text-center space-y-1">
+            <p className="text-sm text-muted-foreground">total interactions</p>
             <div className="text-5xl md:text-6xl font-regular text-orange-500">
-              {card.contractCalls}
+              {data.interactions}
             </div>
           </div>
         </div>

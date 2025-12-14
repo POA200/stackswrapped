@@ -47,6 +47,7 @@ export default function CardPage({
   const [dataLoaded, setDataLoaded] = useState(false);
   const [badgeData, setBadgeData] = useState<any>(null);
   const [finalBadgeData, setFinalBadgeData] = useState<any>(null);
+  const [protocolsData, setProtocolsData] = useState<any>(null);
 
   useEffect(() => {
     // Unwrap the params promise
@@ -114,25 +115,34 @@ export default function CardPage({
         // Extract badge data
         if (wrapped.badge) {
           setBadgeData({
-            badgeTitle: wrapped.badge.title || "The HODL Hero",
+            badgeTitle: wrapped.badge.title || "The Stacks Voyager",
             badgeDescription:
               wrapped.badge.description ||
-              "You earned this title by holding longer than 5% of Holders on Stacks this year",
-            badgeIconSrc: "/HodlHeroBadge.svg", // Default icon
+              "Exploring the Stacks ecosystem — keep going, the best is ahead.",
+            badgeIconSrc: wrapped.badge.badgeSvg
+              ? `/${wrapped.badge.badgeSvg}`
+              : "/HodlHeroBadge.svg",
           });
         }
 
         // Extract final badge summary data
         setFinalBadgeData({
-          badgeTitle: wrapped.badge?.title || "The HODL Hero",
-          badgeIconSrc: "/HodlHeroBadge.svg",
+          badgeTitle: wrapped.badge?.title || "The Stacks Voyager",
+          badgeIconSrc: wrapped.badge?.badgeSvg
+            ? `/${wrapped.badge.badgeSvg}`
+            : "/HodlHeroBadge.svg",
           volume: wrapped.metrics?.volumeUSD || 0,
           nftCount: wrapped.metrics?.nftCount || 0,
           topToken: wrapped.metrics?.topToken || "STX",
           tokenHeldDays: wrapped.metrics?.longestHoldDays || 0,
-          topProtocol: "BITFLOW", // Placeholder since not in API
+          topProtocol: wrapped.metrics?.topProtocols?.[0]?.name || "BITFLOW",
           largestTransaction: 5000, // Placeholder since not in API
         });
+
+        // Set protocols data
+        if (wrapped.metrics?.topProtocols) {
+          setProtocolsData({ protocols: wrapped.metrics.topProtocols });
+        }
       }
 
       setDataLoaded(true);
@@ -186,7 +196,12 @@ export default function CardPage({
       cardId === "nft" ||
       cardId === "rarest-nft" ||
       cardId === "top-tokens" ||
-      cardId === "token-held-longest";
+      cardId === "token-held-longest" ||
+      cardId === "top-protocols" ||
+      cardId === "top-protocol" ||
+      cardId === "title-badge" ||
+      cardId === "badge" ||
+      cardId === "largest-transaction";
 
     if (
       needsWrapped &&
@@ -204,6 +219,9 @@ export default function CardPage({
 
           if (result.metrics) {
             console.log("[CardPage] NFT data received:", result.metrics);
+            // Keep a copy of full wrapped for other cards
+            setWrappedResult(result);
+
             const nftStats = {
               totalNFTs: result.metrics.nftCount || 0,
               topNFTs: result.metrics.topNFTs || [],
@@ -230,28 +248,38 @@ export default function CardPage({
               setLongestTokenData(null);
             }
 
-            // Extract badge data
+            // Extract badge data (title + svg) from API
             if (result.badge) {
               setBadgeData({
-                badgeTitle: result.badge.title || "The HODL Hero",
+                badgeTitle: result.badge.title || "The Stacks Voyager",
                 badgeDescription:
                   result.badge.description ||
-                  "You earned this title by holding longer than 5% of Holders on Stacks this year",
-                badgeIconSrc: "/HodlHeroBadge.svg", // Default icon
+                  "Exploring the Stacks ecosystem — keep going, the best is ahead.",
+                badgeIconSrc: result.badge.badgeSvg
+                  ? `/${result.badge.badgeSvg}`
+                  : "/HodlHeroBadge.svg",
               });
             }
 
             // Extract final badge summary data
             setFinalBadgeData({
-              badgeTitle: result.badge?.title || "The HODL Hero",
-              badgeIconSrc: "/HodlHeroBadge.svg",
+              badgeTitle: result.badge?.title || "The Stacks Voyager",
+              badgeIconSrc: result.badge?.badgeSvg
+                ? `/${result.badge.badgeSvg}`
+                : "/HodlHeroBadge.svg",
               volume: result.metrics?.volumeUSD || 0,
               nftCount: result.metrics?.nftCount || 0,
               topToken: result.metrics?.topToken || "STX",
               tokenHeldDays: result.metrics?.longestHoldDays || 0,
-              topProtocol: "BITFLOW", // Placeholder since not in API
-              largestTransaction: 5000, // Placeholder since not in API
+              topProtocol: result.metrics?.topProtocols?.[0]?.name || "BITFLOW",
+              largestTransaction:
+                result.metrics?.largestStxTransfer ?? undefined,
             });
+
+            // Set protocols data
+            if (result.metrics?.topProtocols) {
+              setProtocolsData({ protocols: result.metrics.topProtocols });
+            }
           }
         } catch (err) {
           console.error("[CardPage] Error fetching NFT data:", err);
@@ -358,6 +386,11 @@ export default function CardPage({
       return (
         <TopProtocolsCard
           address={address || undefined}
+          data={
+            wrappedResult?.metrics?.topProtocols
+              ? { protocols: wrappedResult.metrics.topProtocols }
+              : undefined
+          }
           navigationProps={navigationProps}
           progress={progress}
         />
@@ -366,6 +399,7 @@ export default function CardPage({
       return (
         <TopProtocolCard
           address={address || undefined}
+          data={protocolsData?.protocols?.[0]}
           navigationProps={navigationProps}
           progress={progress}
         />
@@ -374,6 +408,12 @@ export default function CardPage({
       return (
         <LargestTransactionCard
           address={address || undefined}
+          data={{
+            amount:
+              wrappedResult?.metrics?.largestStxTransfer ??
+              finalBadgeData?.largestTransaction ??
+              undefined,
+          }}
           navigationProps={navigationProps}
           progress={progress}
         />

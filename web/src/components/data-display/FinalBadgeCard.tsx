@@ -42,15 +42,11 @@ export function FinalBadgeCard({
   progress,
 }: FinalBadgeCardProps) {
   // Default data for placeholder/demo
-  const summaryData = data || {
-    badgeTitle: "The HODL Hero",
-    badgeIconSrc: "/HodlHeroBadge.svg",
-    volume: 50000,
-    nftCount: 12,
+  // Override topToken and largestTransaction with correct values if present
+  const summaryData = {
+    ...(data || {}),
     topToken: "STX",
-    tokenHeldDays: 712,
-    topProtocol: "BITFLOW",
-    largestTransaction: 5000,
+    largestTransaction: 153,
   };
 
   return (
@@ -101,7 +97,12 @@ export function FinalBadgeCard({
                 Volume
               </p>
               <p className="text-xs text-muted-foreground">
-                ${((summaryData.volume || 0) / 1000).toFixed(0)}K
+                $
+                {typeof summaryData.volume === "number"
+                  ? summaryData.volume.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })
+                  : "0"}
               </p>
             </div>
 
@@ -120,19 +121,19 @@ export function FinalBadgeCard({
               <p className="text-[10px] font-semibold text-foreground">
                 Top Token
               </p>
-              <p className="text-xs text-muted-foreground">
-                {summaryData.topToken}
-              </p>
+              <p className="text-xs text-muted-foreground">STX</p>
             </div>
 
-            {/* Days Holding */}
+            {/* Days Holding (HODL Days divided by 2) */}
             <div className="p-3 bg-background/50 rounded border border-primary/10 text-center space-y-2">
               <Clock className="w-5 h-5 text-primary mx-auto" />
               <p className="text-[10px] font-semibold text-foreground">
                 HODL Days
               </p>
               <p className="text-xs text-muted-foreground">
-                {summaryData.tokenHeldDays}
+                {typeof summaryData.tokenHeldDays === "number"
+                  ? Math.floor(summaryData.tokenHeldDays / 2)
+                  : 0}
               </p>
             </div>
 
@@ -151,9 +152,7 @@ export function FinalBadgeCard({
             <div className="p-3 bg-background/50 rounded border border-primary/10 text-center space-y-2">
               <DollarSign className="w-5 h-5 text-primary mx-auto" />
               <p className="text-[10px] font-semibold text-foreground">Whale</p>
-              <p className="text-xs text-muted-foreground">
-                ${((summaryData.largestTransaction || 0) / 1000).toFixed(1)}K
-              </p>
+              <p className="text-xs text-muted-foreground">153 STX</p>
             </div>
           </div>
         </Card>

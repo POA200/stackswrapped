@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description:
     "Discover your year on Stacks: transactions, NFTs, DeFi, and more. Secured by Bitcoin.",
   icons: {
-    icon: "/Logo.webp",
+    icon: "/Stacks-logo.svg",
   },
 };
 

@@ -19,6 +19,25 @@ export const metadata: Metadata = {
   icons: {
     icon: "/Logo.webp",
   },
+  openGraph: {
+    images: [
+      {
+        url: "/preview.png",
+        width: 1200,
+        height: 630,
+        alt: "Stacks Wrapped Preview Thumbnail",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: [
+      {
+        url: "/preview.png",
+        alt: "Stacks Wrapped Preview Thumbnail",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({

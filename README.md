@@ -4,29 +4,33 @@
 
 Stacks Wrapped is a community project designed to deliver personalized year-end summaries for Stacks ecosystem users. It analyzes on-chain activity, including transaction volume, NFT holdings, and staking longevity, to generate a unique "Wrapped" experience and award users with a prestigious Stacks Title Badge.
 
-This repository uses a modern Next.js Monorepo architecture to separate frontend presentation (`web`), backend logic (`packages`), and core application features (`apps`).
+This repository is organized into two main folders:
+
+- `/web`: The Next.js app containing all UI, API routes, and business logic (React, TypeScript, serverless functions, and data services).
+- `/contract`: Clarity smart contracts and related tests for the Stacks blockchain.
 
 ---
 
 ## 🏗️ Architecture
 
-This project is structured as a Monorepo managed primarily by npm/yarn workspaces, separating the concerns into three main areas:
+## 🏗️ Folder Structure
 
-| Directory                | Purpose                                                                                                                                                                                                       | Technology                    | Deployment               |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------ |
-| `/web`                   | Frontend Application. The main Next.js app, containing all UI components, pages, and API routes (`/api/wrapped`, `/api/bns-lookup`). This is the single deployed application.                                 | Next.js, React, TypeScript    | Vercel (Root)            |
-| `/apps/app`              | Core Components (Legacy/Shared). Contains shared components and utilities that were consolidated into `/web` for simplified Vercel deployment. (Note: These files were merged into `/web`'s `src` directory.) | React, TypeScript             | Consolidated into `/web` |
-| `/packages/data-service` | Backend Logic. Contains all critical business logic for data retrieval, processing, and classification. Includes pagination fixes and the Title Classifier.                                                   | TypeScript, Stacks API (Hiro) | Consolidated into `/web` |
+| Directory   | Purpose                                                         | Technology                 |
+| ----------- | --------------------------------------------------------------- | -------------------------- |
+| `/web`      | Next.js app: UI, API routes, business logic, and data services. | Next.js, React, TypeScript |
+| `/contract` | Clarity smart contracts and tests for Stacks blockchain.        | Clarity, Clarinet          |
 
 ---
 
 ## ⚙️ Local Development Setup
 
-To get the Stacks Wrapped application running locally, follow these steps:
+To get the Stacks Wrapped platform running locally, follow these steps:
 
 ### 1. Prerequisites
 
 You must have Node.js (v18+) and your preferred package manager (npm or yarn) installed.
+
+git clone https://github.com/YourUsername/stackswrapped.git
 
 ### 2. Clone the Repository
 
@@ -50,9 +54,10 @@ cd stackswrapped
 
 ### 3. Install Dependencies
 
-Install packages across the entire monorepo:
+Install dependencies for the web app:
 
 ```bash
+cd web
 npm install # or yarn install
 ```
 
@@ -73,7 +78,7 @@ Note: This variable is used by the serverless functions (e.g., in `/api/wrapped`
 
 ### 5. Run the Application
 
-Start the Next.js development server from the root of the project:
+Start the Next.js development server from the `/web` directory:
 
 ```bash
 npm run dev # or yarn dev
@@ -85,12 +90,12 @@ The application will be accessible at http://localhost:3000.
 
 ## 💡 Key Technical Solutions
 
-The development of this project required overcoming several common Monorepo and Stacks API challenges:
+Key technical solutions include:
 
-- **Vercel Monorepo Deployment:** The core application logic from `/packages` and `/apps` was consolidated directly into the `/web` directory's `src` folder to ensure all dependencies were available during the Vercel build process.
-- **CORS Policy Resolution (403/Blocked):** All external API calls (Volume data, BNS lookup, NFT assets) were moved from client components to internal Next.js API Routes (e.g., `/api/bns-lookup`), enforcing a server-side proxy to bypass browser-based CORS restrictions.
-- **Pagination Accuracy (Zero Data Fix):** The data service functions (`fetchVolumeStats`, `fetchFullNftHoldings`) were refactored to implement a robust while loop pagination, ensuring all pages of transactions and assets were scanned. This solved the "0 Transactions" bug caused by recent activity being buried past the initial 200-item page limit.
-- **Title Classification Logic:** A clear priority system was implemented in `title-classifier.ts` to award the single most prestigious badge (Whale Trader > DeFi Guru > HODL Hero > Elite Collector) when a user qualifies for multiple achievements.
+- **All-in-one Next.js App:** All frontend, backend, and data logic are consolidated in `/web` for easy deployment and maintenance.
+- **CORS Policy Resolution (403/Blocked):** All external API calls (Volume data, BNS lookup, NFT assets) are handled by internal Next.js API Routes (e.g., `/api/bns-lookup`), enforcing a server-side proxy to bypass browser-based CORS restrictions.
+- **Pagination Accuracy (Zero Data Fix):** The data service functions (`fetchVolumeStats`, `fetchFullNftHoldings`) use robust pagination to ensure all transactions and assets are scanned, solving the "0 Transactions" bug.
+- **Title Classification Logic:** A clear priority system in `title-classifier.ts` awards the single most prestigious badge (Whale Trader > DeFi Guru > HODL Hero > Elite Collector) when a user qualifies for multiple achievements.
 
 ---
 

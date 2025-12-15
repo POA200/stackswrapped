@@ -24,7 +24,7 @@ export function HtmlToImageDownload({
       const node = targetRef.current;
       const clone = node.cloneNode(true) as HTMLElement;
       // Set fixed width, let height grow, and fix font size/scaling
-      const fixedWidth = 380;
+      const fixedWidth = 440;
       clone.style.width = fixedWidth + "px";
       clone.style.minWidth = fixedWidth + "px";
       clone.style.maxWidth = fixedWidth + "px";

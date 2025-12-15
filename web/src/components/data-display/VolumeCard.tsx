@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 import { CardFrame } from "@/components/data-display/CardFrame";
 import { TrendingUp } from "lucide-react";
 import Image from "next/image";
@@ -23,6 +23,37 @@ interface VolumeCardProps {
     onDisconnect?: () => void;
   };
   progress?: { current: number; total: number };
+}
+
+function CountUpNumber({ target }: { target: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setCount(0);
+    if (target === 0) return;
+    let start = 0;
+    const duration = 120;
+    const stepTime = Math.max(Math.floor(duration / target), 20);
+
+    function step() {
+      start += 15;
+      setCount(start);
+      if (start < target) {
+        ref.current = setTimeout(step, stepTime);
+      }
+    }
+    step();
+    return () => {
+      if (ref.current) clearTimeout(ref.current);
+    };
+  }, [target]);
+
+  return (
+    <span className="text-4xl md:text-6xl font-regular text-orange-500">
+      {count.toLocaleString()}
+    </span>
+  );
 }
 
 export function VolumeCard({
@@ -96,9 +127,7 @@ export function VolumeCard({
         {/* Content Area */}
         <div className="text-center space-y-3 z-10">
           {/* Key Metric - Transaction Count */}
-          <div className="text-5xl md:text-6xl font-regular text-orange-500">
-            {data.totalTransactions.toLocaleString()}
-          </div>
+          <CountUpNumber target={data.totalTransactions} />
           <p className="text-sm font-medium text-muted-foreground">
             Transactions
           </p>

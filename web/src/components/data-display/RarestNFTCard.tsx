@@ -69,9 +69,9 @@ export function RarestNFTCard({
       currentStep={progress?.current}
       totalSteps={progress?.total}
     >
-      <div className="relative w-full h-full flex flex-col items-center justify-center px-4 py-6">
+      <div className="w-full h-full flex flex-col items-center justify-center px-4 py-6">
         {/* Decorative stickers */}
-        <div className="absolute top-0 w-auto">
+        <div className="top-0 w-auto">
           <Image
             src="/TopNFTCardSticker.svg"
             alt=""
@@ -80,18 +80,9 @@ export function RarestNFTCard({
             className="w-full h-full"
           />
         </div>
-        <div className="absolute bottom-0 w-auto">
-          <Image
-            src="/BottomNFTCardSticker.svg"
-            alt=""
-            width={40}
-            height={20}
-            className="w-full h-full"
-          />
-        </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center space-y-4 text-center">
+        <div className="relative z-10 flex flex-col items-center justify-center space-y-4 text-center py-6 md:py-8">
           {/* Title */}
           <h2 className="text-lg md:text-xl font-regular text-primary">
             Your rarest asset is
@@ -119,6 +110,15 @@ export function RarestNFTCard({
               </p>
             )}
           </div>
+        </div>
+        <div className="bottom-0 w-auto">
+          <Image
+            src="/BottomNFTCardSticker.svg"
+            alt=""
+            width={40}
+            height={20}
+            className="w-full h-full"
+          />
         </div>
       </div>
     </CardFrame>

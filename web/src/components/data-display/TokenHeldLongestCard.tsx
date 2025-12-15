@@ -87,21 +87,14 @@ export function TokenHeldLongestCard({
       currentStep={progress?.current}
       totalSteps={progress?.total}
     >
-      <div className="relative w-full h-full flex flex-col items-center justify-center px-4 py-6 space-y-6 overflow-hidden">
+      <div className="w-full h-full flex flex-col items-center justify-center px-4 py-6 space-y-6 overflow-hidden">
         {/* Background Stickers */}
         <Image
           src="/TopTokensHeldSticker.svg"
           alt=""
           width={48}
-          height={48}
-          className="absolute top-0 w-48 h-auto -z-10 pointer-events-none opacity-40"
-        />
-        <Image
-          src="/BottomTokensHeldSticker.svg"
-          alt=""
-          width={52}
-          height={52}
-          className="absolute bottom-0 w-full h-auto -z-10 pointer-events-none opacity-20"
+          height={24}
+          className="top-0 w-full h-24"
         />
 
         {/* Subheading */}
@@ -116,7 +109,7 @@ export function TokenHeldLongestCard({
 
         {/* Heading */}
         <div className="text-center space-y-2 z-10">
-          <h2 className="text-2xl md:text-6xl font-bold text-primary">
+          <h2 className="text-5xl md:text-6xl font-bold text-primary">
             ${card.token}
           </h2>
         </div>
@@ -130,6 +123,13 @@ export function TokenHeldLongestCard({
             Days
           </div>
         </div>
+        <Image
+          src="/BottomTokensHeldSticker.svg"
+          alt=""
+          width={52}
+          height={42}
+          className="bottom-0 w-full h-32"
+        />
       </div>
     </CardFrame>
   );

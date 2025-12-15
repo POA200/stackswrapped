@@ -40,7 +40,7 @@ const Titles = {
   STACKS_VOYAGER: {
     title: 'The Stacks Voyager',
     description: 'Exploring the Stacks ecosystem — keep going, the best is ahead.',
-    badgeSvg: 'HodlHeroBadge.svg',
+    badgeSvg: 'StacksVoyager.svg',
   },
 } as const;
 

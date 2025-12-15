@@ -1,5 +1,20 @@
 "use client";
 
+// Format a number as USD, abbreviate if >= 1,000,000, dividing by usdPrice
+const usdPrice = 1; // Set this to the current USD price of the token (e.g., STX)
+function formatUsdVolume(amount?: number): string {
+  if (typeof amount !== "number" || isNaN(amount)) return "$0";
+  const usdAmount = amount / usdPrice;
+  if (usdAmount >= 1_000_000) {
+    const millions = usdAmount / 1_000_000;
+    // Show 1 decimal if needed, e.g. 7.5M
+    return `$${millions.toFixed(1)}M`;
+  }
+  return `$${usdAmount.toLocaleString(undefined, {
+    maximumFractionDigits: 0,
+  })}`;
+}
+
 import { CardFrame } from "@/components/data-display/CardFrame";
 import { Card } from "@/components/ui/card";
 import {
@@ -94,12 +109,7 @@ export function FinalBadgeCard({
                 Volume
               </p>
               <p className="text-xs text-muted-foreground">
-                $
-                {typeof summaryData.volume === "number"
-                  ? summaryData.volume.toLocaleString(undefined, {
-                      maximumFractionDigits: 0,
-                    })
-                  : "0"}
+                {formatUsdVolume(summaryData.volume)}
               </p>
             </div>
 
@@ -153,7 +163,7 @@ export function FinalBadgeCard({
               <p className="text-[10px] font-semibold text-foreground">Whale</p>
               <p className="text-xs text-muted-foreground">
                 {typeof summaryData.largestTransaction === "number"
-                  ? `$${summaryData.largestTransaction}`
+                  ? `${summaryData.largestTransaction} STX`
                   : "0 STX"}
               </p>
             </div>

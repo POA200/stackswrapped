@@ -366,35 +366,8 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.daysHeld - a.daysHeld)
       .slice(0, 5);
 
-    // Fetch logos for top tokens
-    const topTokensHeldLongest = await Promise.all(
-      topTokensBase.map(async (token) => {
-        let logo: string | undefined;
-        try {
-          const contractId = tokenNameToContractId.get(token.name);
-          if (contractId) {
-            const metadata = await fetchFTMetadata(contractId);
-            logo = metadata?.image_uri || metadata?.logo || metadata?.image;
-            
-            // If no logo found, try using ALEX tokens API or common token logos
-            if (!logo) {
-              // Use a common pattern for well-known tokens
-              const tokenLogoMap: Record<string, string> = {
-                'sbtc-token': 'https://ipfs.io/ipfs/bafkreibqnozdui4ntgoh3oo437lvhg7qrsccmbzhgumwwjf2smb3eegyqu',
-                'alex': 'https://assets.alexlab.co/alex-logo-circle.png',
-                'aeusdc': 'https://assets.alexlab.co/aeusdc-logo.svg',
-                'NYC': 'https://cdn.citycoins.co/logos/newyorkcitycoin.png',
-                'MIA': 'https://cdn.citycoins.co/logos/miamicoin.png',
-              };
-              logo = tokenLogoMap[token.name];
-            }
-          }
-        } catch (err) {
-          console.warn(`[/api/wrapped] FT logo fetch failed for ${token.name}:`, err);
-        }
-        return { ...token, logo };
-      })
-    );
+    // No logo fetching for top tokens
+    const topTokensHeldLongest = topTokensBase;
 
     const longestTokenHold = topTokensHeldLongest[0] || null;
     // Removed duplicate declaration of topNFTs (see below for the actual declaration)
@@ -434,69 +407,21 @@ export async function GET(request: NextRequest) {
       return String(tokenIdRaw ?? '');
     };
 
-    // Fetch all images for a given NFT assetId (returns array of metadata objects)
-    const fetchImagesForAsset = async (assetId: string): Promise<any[]> => {
-      try {
-        const [contractId] = assetId.split('::');
-        const url = `https://api.mainnet.hiro.so/extended/v1/tokens/nft/holdings?asset_identifier=${encodeURIComponent(assetId)}&limit=50`;
-        const res = await fetch(url, { next: { revalidate: 900 } });
-        if (!res.ok) throw new Error(`fetchImagesForAsset ${res.status}`);
-        const data = await res.json();
-        // Try to return the results array, fallback to empty array
-        return Array.isArray(data.results) ? data.results : [];
-      } catch (err) {
-        console.warn(`[/api/wrapped] fetchImagesForAsset failed for ${assetId}:`, err);
-        return [];
-      }
-    };
-    
-        const withImages = await Promise.all(
-          nft2025.map(async (nft: any) => {
-            const assetId = nft.asset_identifier || nft.asset?.asset_id || '';
-            const tokenIdRaw = nft.value?.repr || nft.token_id || nft.name;
-            const tokenId = normalizeTokenId(tokenIdRaw);
-            let image: string | undefined;
-    
-            try {
-              if (assetId) {
-                const metaList = await fetchImagesForAsset(assetId);
-                if (tokenId && Array.isArray(metaList)) {
-                  const match = metaList.find((m: any) => normalizeTokenId(m.token_id) === tokenId);
-                  image = match?.metadata?.image || match?.image || match?.metadata?.image_url;
-                  if (!image) {
-                    const tokenMeta = await fetchTokenMetadata(assetId, tokenId);
-                    image = tokenMeta?.metadata?.image || tokenMeta?.image || tokenMeta?.metadata?.image_url;
-                  }
-                } else if (metaList[0]) {
-                  image = metaList[0]?.metadata?.image || metaList[0]?.image || metaList[0]?.metadata?.image_url;
-                }
-              }
-            } catch (imgErr) {
-              console.warn(`[/api/wrapped] NFT image fetch failed for ${assetId}::${tokenId}:`, imgErr);
-            }
-    
-            return { ...nft, image };
-          }),
-        );
-
-    // Calculate top 5 rarest NFTs from 2025 acquisitions
-    const topNFTs = withImages
+    // No NFT image fetching, just map the data
+    const topNFTs = nft2025
       .map((nft: any) => {
         const assetId = nft.asset_identifier || nft.asset?.asset_id || '';
         const parts = assetId.split('::');
         const collectionName = parts[1] || parts[0] || 'Unknown';
         const tokenId = nft.value?.repr || nft.token_id || nft.name || '';
         const name = `${collectionName} #${tokenId}`.replace(/\s+/g, ' ').trim();
-        
         // Better rarity calculation based on supply
         const supply = nft.count || nft.total_supply || 10000;
         const rarity = Math.max(1, Math.min(99, Math.round(100 * (1 - Math.log(supply + 1) / Math.log(10000)))));
-        
         return {
           name,
           collection: collectionName,
           rarity,
-          image: nft.image,
         };
       })
       .sort((a: any, b: any) => b.rarity - a.rarity)

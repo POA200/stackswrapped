@@ -113,18 +113,7 @@ export function TopTokensCard({
                   {index + 1}
                 </div>
                 <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/10 overflow-hidden">
-                  {token.logo ? (
-                    <Image
-                      src={token.logo}
-                      alt={token.name}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <CircleDot className="w-4 h-4 text-primary" />
-                  )}
+                  <CircleDot className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1">
                   <p className="text-lg font-semibold text-primary leading-snug">

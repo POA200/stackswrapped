@@ -4,9 +4,9 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-primary bg-background">
+    <footer className="border-t border-primary bg-primary/2 backdrop-blur-lg">
       <div className="container mx-auto px-4 py-4">
-        <p className="text-center text-sm text-muted-foreground">
+        <div className="text-center text-sm text-muted-foreground">
           © {currentYear} Stacks Wrapped. All rights reserved.{" "}
           <a
             href="https://x.com/Stacks"
@@ -24,7 +24,7 @@ export function Footer() {
           >
             | by iPeter
           </a>
-          <div className="text-center">
+          <p className="text-center">
             <a
               href="https://x.com/StacksAIGuild"
               target="_blank"
@@ -33,8 +33,8 @@ export function Footer() {
             >
               HM: StacksAIGuild
             </a>
-          </div>
-        </p>
+          </p>
+        </div>
       </div>
     </footer>
   );

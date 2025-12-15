@@ -77,7 +77,7 @@ export function RarestNFTCard({
             alt=""
             width={32}
             height={20}
-            className="w-full h-full opacity-40"
+            className="w-full h-full"
           />
         </div>
         <div className="absolute bottom-0 w-auto">
@@ -86,43 +86,29 @@ export function RarestNFTCard({
             alt=""
             width={40}
             height={20}
-            className="w-full h-full opacity-40"
+            className="w-full h-full"
           />
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center space-y-6 text-center">
+        <div className="relative z-10 flex flex-col items-center justify-center space-y-4 text-center">
           {/* Title */}
-          <h2 className="text-2xl md:text-3xl font-regular text-primary">
+          <h2 className="text-lg md:text-xl font-regular text-primary">
             Your rarest asset is
           </h2>
 
-          {/* NFT Logo Circle */}
-          <div className="flex items-center justify-center w-32 h-32 rounded-full border-2 border-primary/40 bg-primary/5 backdrop-blur-sm overflow-hidden">
-            {rarest?.image ? (
-              // Show NFT image when available
-              <img
-                src={rarest.image}
-                alt={rarest.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center">
-                🎨
-              </div>
-            )}
-          </div>
-
           {/* NFT Name */}
           <div className="space-y-1">
-            <h3 className="text-3xl md:text-4xl font-bold text-primary">
+            <h3 className="text-3xl md:text-4xl font-bold text-orange-500">
               {rarest ? rarest.name : "No NFT found"}
             </h3>
             {rarest ? (
               <>
-                <p className="text-sm text-foreground">{rarest.collection}</p>
+                <p className="text-sm text-muted-foreground">
+                  {rarest.collection}
+                </p>
                 {typeof rarest.rarity === "number" && (
-                  <p className="text-xs text-orange-500 font-semibold mt-2">
+                  <p className="text-lg text-primary/80 font-medium mt-2">
                     Rarity score: {rarest.rarity}
                   </p>
                 )}

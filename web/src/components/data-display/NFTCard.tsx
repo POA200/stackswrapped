@@ -1,7 +1,7 @@
 "use client";
 
 import { CardFrame } from "@/components/data-display/CardFrame";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Gem } from "lucide-react";
 
 interface NFTCardProps {
   address?: string;
@@ -121,15 +121,7 @@ export function NFTCard({
                   </span>
                 </div>
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-primary/30 flex-shrink-0">
-                  {nft.image ? (
-                    <img
-                      src={nft.image}
-                      alt={nft.name || nft.collection}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-2xl">🎨</span>
-                  )}
+                  <Gem className="w-7 h-7 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">

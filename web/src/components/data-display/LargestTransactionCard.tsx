@@ -73,7 +73,7 @@ export function LargestTransactionCard({
             <h2 className="text-4xl md:text-5xl font-regular text-primary">
               The Whale&apos;s Splash!
             </h2>
-            <p className="text-base text-muted-foreground">
+            <p className="text-base text-foreground">
               Your largest single transaction was
             </p>
           </div>

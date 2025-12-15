@@ -109,37 +109,43 @@ export function CardFrame({
           className="relative z-10 w-full max-w-md lg:max-w-2xl aspect-[4/5] flex flex-col border-2 border-primary/30 shadow-2xl shadow-primary/20 bg-background"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-border/50">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col items-center border-b border-border/50 px-6 pt-6 pb-2">
+            {/* Logo centered at top */}
+            <div className="flex flex-col items-center w-full">
               <Image
                 src="/Logo.webp"
                 alt="Stacks Wrapped"
                 width={32}
                 height={32}
-                className="w-8 h-8 object-contain"
+                className="w-8 h-8 object-contain mx-auto"
               />
-              <h2 className="text-md font-medium text-primary">
+              <h2 className="text-md font-medium text-primary text-center">
                 Stacks <span className="text-primary/50">Wrapped</span>
               </h2>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="text-xs">
-                {splitAddress(address)}
-              </Badge>
-              <HtmlToImageShare
-                targetRef={cardRef as any}
-                cardTitle={title || "Card"}
-                badgeTitle={badgeTitle}
-              />
-              <HtmlToImageDownload
-                targetRef={cardRef as any}
-                fileName={`StacksWrapped_${(title || "Card").replace(
-                  /\s+/g,
-                  "_"
-                )}.png`}
-              />
-              {onDisconnect && (
-                <div className="flex items-center gap-2">
+            {/* Row below: address left, actions right */}
+            <div className="flex flex-row items-center justify-between w-full mt-4">
+              {/* Address badge left */}
+              <div className="flex-1 flex items-center">
+                <Badge variant="default" className="text-xs">
+                  {splitAddress(address)}
+                </Badge>
+              </div>
+              {/* Actions right */}
+              <div className="flex-1 flex items-center justify-end gap-2">
+                <HtmlToImageShare
+                  targetRef={cardRef as any}
+                  cardTitle={title || "Card"}
+                  badgeTitle={badgeTitle}
+                />
+                <HtmlToImageDownload
+                  targetRef={cardRef as any}
+                  fileName={`StacksWrapped_${(title || "Card").replace(
+                    /\s+/g,
+                    "_"
+                  )}.png`}
+                />
+                {onDisconnect && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -148,8 +154,8 @@ export function CardFrame({
                   >
                     <LogOut className="w-4 h-4 mr-1" />
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 

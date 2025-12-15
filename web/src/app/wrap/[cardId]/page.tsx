@@ -1,7 +1,8 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+// import { useWallet } from "@/lib/useWallet";
 import { VolumeCard } from "@/components/data-display/VolumeCard";
 import { NFTCard } from "@/components/data-display/NFTCard";
 import { RarestNFTCard } from "@/components/data-display/RarestNFTCard";
@@ -29,15 +30,14 @@ const CARD_SEQUENCE = [
   "badge",
 ];
 
-export default function CardPage({
-  params,
-}: {
-  params: Promise<{ cardId: string }>;
-}) {
+export default function Page() {
+  // Wallet state removed
   const router = useRouter();
   const searchParams = useSearchParams();
+  const params = useParams();
+  // Use address only from query param
   const address = searchParams.get("address");
-  const [cardId, setCardId] = useState<string | null>(null);
+  const [cardId] = useState<string>(params.cardId as string);
   const [isLoading, setIsLoading] = useState(true);
   const [volumeData, setVolumeData] = useState<VolumeStats | null>(null);
   const [nftData, setNftData] = useState<any>(null);
@@ -50,12 +50,8 @@ export default function CardPage({
   const [protocolsData, setProtocolsData] = useState<any>(null);
 
   useEffect(() => {
-    // Unwrap the params promise
-    Promise.resolve(params).then((resolvedParams) => {
-      setCardId(resolvedParams.cardId);
-      setIsLoading(false);
-    });
-  }, [params]);
+    setIsLoading(false);
+  }, []);
 
   // Load cached data on mount
   useEffect(() => {

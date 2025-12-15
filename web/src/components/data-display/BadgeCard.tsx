@@ -111,6 +111,7 @@ export function BadgeCard({
                 "Your personalized title celebrates your on-chain year on Stacks."}
             </p>
           </div>
+          {/* Redeem Title Badge Button removed as requested */}
         </div>
       </div>
     </CardFrame>

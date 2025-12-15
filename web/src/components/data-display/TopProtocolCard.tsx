@@ -77,10 +77,10 @@ export function TopProtocolCard({
         <div className="flex flex-col items-center justify-center space-y-6 z-10">
           {/* Top Heading */}
           <div className="text-center space-y-2">
-            <h2 className="text-4xl md:text-5xl font-regular text-primary">
+            <h2 className="text-xl md:text-3xl font-regular text-orange-500">
               Your DeFi Home Base!
             </h2>
-            <p className="text-base text-muted-foreground">
+            <p className="text-base text-foreground">
               You interacted most with
             </p>
           </div>
@@ -95,7 +95,7 @@ export function TopProtocolCard({
           {/* Contract Calls */}
           <div className="text-center space-y-1">
             <p className="text-sm text-muted-foreground">total interactions</p>
-            <div className="text-5xl md:text-6xl font-regular text-orange-500">
+            <div className="text-3xl md:text-5xl font-medium text-orange-500">
               {data.interactions}
             </div>
           </div>
